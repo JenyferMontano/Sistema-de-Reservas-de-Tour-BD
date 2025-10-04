@@ -1,0 +1,20 @@
+.form-container {
+    background-color: rgba(255, 255, 255, 0.75); 
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    max-width: 900px;
+    margin: 40px auto;
+  }
+  
+  
+  .custom-btn {
+    background-color: #4e3e2e;        
+    color: #fff;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .custom-btn:hover {
+    background-color: #3c2e23;        
+  }

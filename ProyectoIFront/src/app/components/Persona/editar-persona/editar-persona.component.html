@@ -1,0 +1,71 @@
+<div class="edit-container container mt-4">
+    <h2 class="mb-4  titulo-centro" >Editar Persona</h2>
+
+    <div class="mb-3 row">
+        <label for="idBuscar" class="col-sm-2 col-form-label">ID de Persona:</label>
+        <div class="col-sm-4">
+            <input type="number" class="form-control" id="idBuscar" [(ngModel)]="idBuscar" name="idBuscar" />
+        </div>
+        <div class="col-sm-2">
+            <button class="btn custom-btn w-100" (click)="buscarPersona()">Buscar</button>
+        </div>
+    </div>
+
+    <form *ngIf="persona.idpersona > 0" (ngSubmit)="actualizarPersona()" class="border rounded p-4 shadow-sm bg-light">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Nombre:</label>
+                <input type="text" class="form-control" [(ngModel)]="persona.nombre" name="nombre" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Primer Apellido:</label>
+                <input type="text" class="form-control" [(ngModel)]="persona.apellido_1" name="apellido_1" required />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Segundo Apellido:</label>
+                <input type="text" class="form-control" [(ngModel)]="persona.apellido_2" name="apellido_2" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Fecha de Nacimiento:</label>
+                <input type="date" class="form-control" [(ngModel)]="fechaNacString" name="fechaNac" required />
+            </div>
+        </div>
+       
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label class="form-label">Dirección:</label>
+                <input type="text" class="form-control" [(ngModel)]="persona.direccion" name="direccion" required />
+            </div>
+        </div>
+
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Teléfono:</label>
+                <input type="text" class="form-control" [(ngModel)]="persona.telefono" name="telefono" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Correo:</label>
+                <input type="email" class="form-control" [(ngModel)]="persona.correo" name="correo" required
+                 pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" />
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Actualizar</button>
+            <button type="button" class="btn btn-danger" (click)="eliminarPersona()">Eliminar</button>
+        </div>
+    </form>
+
+    <div *ngIf="mensaje" class="alert alert-success mt-3">
+        {{ mensaje }}
+    </div>
+    <div *ngIf="error" class="alert alert-danger mt-3">
+        {{ error }}
+    </div>
+
+</div>

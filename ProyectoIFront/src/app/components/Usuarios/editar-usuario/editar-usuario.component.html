@@ -1,0 +1,66 @@
+<div class="edit-container container mt-4">
+  <h2 class="text-center titulo-crear">Editar Usuario</h2>
+
+  <div class="mb-3">
+    <label for="buscarUsername" class="form-label">Buscar por Username:</label>
+    <input type="text" id="buscarUsername" class="form-control" [(ngModel)]="usernameBuscar" />
+    <button class="btn custom-btn mt-2" (click)="buscarUsuario()">Buscar</button>
+  </div>
+
+  <div *ngIf="mensaje" class="alert alert-success">{{ mensaje }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+
+  <form *ngIf="usuario && usuario.username" class="card p-4 mt-3" (ngSubmit)="updateUsuario()">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Username:</label>
+        <input type="text" class="form-control" [(ngModel)]="usuario.username" name="username" readonly />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Rol:</label>
+        <input type="text" class="form-control" [(ngModel)]="usuario.rol" name="rol" readonly />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">ID Persona:</label>
+        <input type="number" class="form-control" [(ngModel)]="usuario.idpersona" name="idpersona" readonly />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Nueva contraseña (opcional):</label>
+        <input type="password" class="form-control" [(ngModel)]="nuevaPassword" name="password"
+          placeholder="Nueva contraseña"
+          pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$"
+          title="La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo." />
+      </div>
+    </div>
+
+
+    <div class="row mb-3">
+      <div class="col-md-6" *ngIf="usuario.image">
+        <label class="form-label">Imagen actual:</label><br />
+        <img [src]="getImageUrl(usuario.image)" alt="Imagen actual" class="img-thumbnail" width="350" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Subir nueva imagen:</label>
+        <input type="file" class="form-control" (change)="uploadImage($event)" />
+      </div>
+    </div>
+
+    <div class="mb-3" *ngIf="imagePreview">
+      <label class="form-label">Previsualización:</label><br />
+      <img [src]="imagePreview" alt="Previsualización" class="img-thumbnail" width="350" />
+    </div>
+
+
+    <div class="text-center mt-3">
+      <button type="submit" class="btn btn-success me-2">Actualizar</button>
+      <button type="button" class="btn btn-danger me-2" (click)="deleteUsuario()">Eliminar</button>
+      <button type="button" class="btn btn-secondary" (click)="resetForm()">Limpiar</button>
+    </div>
+  </form>
+</div>
+
+

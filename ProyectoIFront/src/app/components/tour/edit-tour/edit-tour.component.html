@@ -1,0 +1,76 @@
+<div class="editar-tour-container">
+  <h2 class="titulo-editar">Editar Tour</h2>
+
+  <div class="mb-4 row justify-content-center">
+    <div class="col-md-4">
+      <input type="number" class="form-control" [(ngModel)]="idBuscar" name="idBuscar" placeholder="ID del Tour" />
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-buscar" (click)="buscarTour()">Buscar</button>
+    </div>
+  </div>
+
+  <form *ngIf="tour.idtour > 0" (ngSubmit)="actualizarTour()" class="formulario-tour p-4">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Nombre:</label>
+        <input type="text" class="form-control" [(ngModel)]="tour.nombre" name="nombre" required />
+      </div>
+      <div class="col-md-6">
+        <label>Descripción:</label>
+        <input type="text" class="form-control" [(ngModel)]="tour.descripcion" name="descripcion" required />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Tipo:</label>
+        <input type="text" class="form-control" [(ngModel)]="tour.tipo" name="tipo" required />
+      </div>
+      <div class="col-md-6">
+        <label>Precio Base:</label>
+        <input type="number" class="form-control" [(ngModel)]="tour.preciobase" name="preciobase" required />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Ubicación:</label>
+        <input type="text" class="form-control" [(ngModel)]="tour.ubicacion" name="ubicacion" required />
+      </div>
+      <div class="col-md-6">
+        <label>Disponibilidad:</label>
+        <select class="form-control" [(ngModel)]="tour.disponibilidad" name="disponibilidad" required>
+          <option [value]="1">Disponible</option>
+          <option [value]="2">No Disponible</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label>Nombre actual de la imagen:</label>
+      <input type="text" class="form-control" [(ngModel)]="tour.imagetour" name="imagetour" />
+    </div>
+
+    <div class="mb-3">
+      <label>Subir nueva imagen:</label>
+      <input type="file" class="form-control" (change)="onFileSelected($event)" accept=".jpg,.jpeg,.png" />
+      <button type="button" class="btn btn-outline-primary mt-2" (click)="subirImagen()" [disabled]="!imagenSeleccionada">
+        Subir Imagen
+      </button>
+      <div *ngIf="imagenPrevisualizacion" class="mt-3">
+        <label>Previsualización:</label><br />
+        <img [src]="imagenPrevisualizacion" class="img-fluid rounded border" style="max-height: 200px;" />
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-success">Actualizar</button>
+      <button type="button" class="btn btn-danger" (click)="eliminarTour()">Eliminar</button>
+      <button type="button" class="btn btn-secondary" (click)="resetForm()">Limpiar</button>
+    </div>
+  </form>
+
+  <div *ngIf="mensaje" class="alert alert-success mt-3">{{ mensaje }}</div>
+  <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+</div>

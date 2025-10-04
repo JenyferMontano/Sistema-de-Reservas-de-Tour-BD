@@ -1,0 +1,107 @@
+.custom-navbar {
+  background-color: #716558; 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  color: #e8e8e8 !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+}
+
+.dropdown-menu {
+  background-color: #716558;
+  color: #ffffff;
+}
+
+.nav-item.user-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.nav-item.user-dropdown .dropdown-content-css {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-radius: 0.25rem;
+}
+
+.nav-item.user-dropdown:hover .dropdown-content-css {
+  display: block;
+}
+
+.nav-item.user-dropdown .user-greeting {
+  margin-right: 0.5rem;
+  white-space: nowrap;
+  color: #e8e8e8;
+}
+
+.nav-item.user-dropdown img {
+  border-radius: 50%;
+  border: 1px solid #6c757d;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+.dropdown-content-css li {
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-content-css li:last-child {
+  border-bottom: none;
+}
+
+.dropdown-content-css li a {
+  color: black;
+  padding: 10px 16px;
+  display: block;
+  text-decoration: none;
+}
+
+.dropdown-content-css li a:hover {
+  background-color: #f1f1f1;
+}
+
+.nav-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.custom-navbar {
+  position: relative;
+}
+
+.custom-navbar {
+  position: relative;
+}
+
+
+
+
+
+
+
+
+
+
+

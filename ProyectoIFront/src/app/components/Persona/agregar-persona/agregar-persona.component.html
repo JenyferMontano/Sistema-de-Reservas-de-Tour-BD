@@ -1,0 +1,49 @@
+<div class="form-container container mt-4">
+  <h2 class="text-center titulo-crear">Crear Persona</h2>
+  <form (ngSubmit)="crearPersona()" #personaForm="ngForm">
+    
+    <div class="row mb-3">
+      <div class="col">
+        <input type="number" class="form-control" placeholder="ID" required [(ngModel)]="persona.idpersona"
+          name="idPersona">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Nombre" required [(ngModel)]="persona.nombre"
+          name="nombre">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Apellido 1" required [(ngModel)]="persona.apellido_1"
+          name="apellido_1">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Apellido 2" required [(ngModel)]="persona.apellido_2"
+          name="apellido_2">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <input type="date" class="form-control" required [(ngModel)]="fechaNacString" name="fechanac">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Dirección" required [(ngModel)]="persona.direccion"
+          name="direccion">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Teléfono" required [(ngModel)]="persona.telefono"
+          name="telefono">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <input type="email" class="form-control" placeholder="correo@gmail.com" required [(ngModel)]="persona.correo"
+        name="correo"  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+    </div>
+    <div class="text-center">
+  <button type="submit" class="btn custom-btn">Registrar Persona</button>
+</div>
+  </form>
+</div>

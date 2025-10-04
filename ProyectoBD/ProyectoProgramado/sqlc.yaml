@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "sqlserver"
+    queries: "./db/queries"
+    schema: "./db/migration"
+    gen:
+      go:
+        package: "dto"
+        out: "dto"
+        emit_json_tags: true
+        emit_prepared_queries: true

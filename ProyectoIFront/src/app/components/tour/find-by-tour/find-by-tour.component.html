@@ -1,0 +1,37 @@
+<div class="container mt-4">
+  <div class="filtro-tours-box">
+    <h2 class="mb-3">Buscar Tours por Tipo</h2>
+
+    <div class="mb-3">
+      <label for="tipo" class="form-label">Tipo de tour:</label>
+      <select [(ngModel)]="tipo" (change)="filtrarTours()" class="form-select">
+        <option value="">-- Selecciona un tipo --</option>
+        <option *ngFor="let t of tiposUnicos" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="mensajeError" class="alert alert-danger">
+    {{ mensajeError }}
+  </div>
+
+  <div class="row mt-4">
+    <div *ngFor="let tour of tours" class="col-md-4 mb-4">
+      <div class="card h-100 shadow">
+        <img *ngIf="tour.imagetour" [src]="getImageUrl(tour.imagetour)" class="card-img-top" alt="Imagen del tour">
+        <div class="card-body">
+          <h5 class="card-title">{{ tour.nombre }}</h5>
+          <p class="card-text"><strong>Tipo:</strong> {{ tour.tipo }}</p>
+          <p class="card-text"><strong>Ubicación:</strong> {{ tour.ubicacion }}</p>
+          <p class="card-text"><strong>Descripción:</strong> {{ tour.descripcion }}</p>
+           <p class="card-text">
+              <strong>Disponibilidad:</strong>
+              <span *ngIf="tour.disponibilidad === 1" class="text-success">Disponible</span>
+              <span *ngIf="tour.disponibilidad === 2" class="text-danger">No disponible</span>
+            </p>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

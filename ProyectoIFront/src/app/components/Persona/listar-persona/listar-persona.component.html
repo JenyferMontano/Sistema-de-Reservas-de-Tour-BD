@@ -1,0 +1,37 @@
+<div class="personas-container">
+  <h2>Lista de Personas</h2>
+
+  <div *ngIf="loading" class="alert alert-info">Cargando...</div>
+  <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
+
+  <table class="tabla-personas" *ngIf="!loading && personas.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Apellido 1</th>
+        <th>Apellido 2</th>
+        <th>Fecha Nac.</th>
+        <th>Dirección</th>
+        <th>Teléfono</th>
+        <th>Correo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let persona of personas">
+        <td>{{ persona.idpersona }}</td>
+        <td>{{ persona.nombre }}</td>
+        <td>{{ persona.apellido_1 }}</td>
+        <td>{{ persona.apellido_2 }}</td>
+        <td>{{ persona.fechanac | date:'yyyy-MM-dd' }}</td>
+        <td>{{ persona.direccion }}</td>
+        <td>{{ persona.telefono }}</td>
+        <td>{{ persona.correo }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && personas.length === 0">
+    <p>No hay personas registradas.</p>
+  </div>
+</div>

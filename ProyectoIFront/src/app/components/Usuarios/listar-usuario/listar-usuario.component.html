@@ -1,0 +1,33 @@
+<div class="usuarios-container">
+  <h2>Lista de Usuarios</h2>
+
+  <div *ngIf="loading" class="alert alert-info">Cargando usuarios...</div>
+  <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
+
+  <table *ngIf="usuarios.length > 0 && !loading" class="tabla-usuarios">
+    <thead>
+      <tr>
+        <th>Nombre de Usuario</th>
+        <th>Rol</th>
+        <th>ID Persona</th>
+        <th>Imagen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let usuario of usuarios">
+        <td>{{ usuario.username }}</td>
+        <td>{{ usuario.rol }}</td>
+        <td>{{ usuario.idpersona }}</td>
+        <td>
+          <img *ngIf="usuario.image" [src]="getImageUrl(usuario.image)" alt="Imagen de usuario"
+               class="imagen-usuario" />
+          <span *ngIf="!usuario.image" class="text-muted">Sin imagen</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="usuarios.length === 0 && !loading && !error" class="alert alert-warning">
+    No se encontraron usuarios.
+  </div>
+</div>
