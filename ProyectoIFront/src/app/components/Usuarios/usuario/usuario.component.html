@@ -1,0 +1,61 @@
+<div class="form-container container mt-4">
+  <h2 class="titulo-crear text-center">Crear Usuario</h2>
+  <form #usuarioForm="ngForm" (ngSubmit)="onSubmit(usuarioForm)">
+
+    <div class="row mb-3">
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Nombre de usuario" required [(ngModel)]="usuario.username"
+          name="username" />
+      </div>
+      <div class="col">
+        <input type="password" class="form-control" placeholder="Contraseña" required [(ngModel)]="usuario.password"
+          name="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&.])[A-Za-z\\d@$!%*?&.]{8,}$"
+          title="La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."
+          #password="ngModel" />
+
+        <div *ngIf="password.invalid && password.touched" class="text-danger mt-1">
+          La contraseña debe tener al menos 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo.
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <select class="form-control" required [(ngModel)]="usuario.rol" name="rol">
+          <option value="" disabled selected>Seleccione un rol</option>
+          <option value="cliente">Cliente</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <div class="col">
+        <select class="form-control" required [(ngModel)]="usuario.idpersona" name="idPersona">
+          <option value="" disabled selected>Seleccione una persona</option>
+          <option *ngFor="let p of personas" [ngValue]="p.idpersona">
+            {{ p.idpersona }} - {{ p.nombre }} {{ p.apellido_1 }} {{ p.apellido_2 }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="imagen">Seleccione una imagen de perfil:</label>
+      <input type="file" class="form-control" id="imagen" (change)="uploadImage($event)" accept=".png,.jpg,.jpeg" />
+
+      <div class="mt-2">
+        <strong>{{ filename || 'Imagen no seleccionada' }}</strong>
+      </div>
+
+      <div *ngIf="imagePreview" class="mt-2">
+        <p>Vista previa:</p>
+        <img [src]="imagePreview" alt="Vista previa" style="max-width: 200px;" />
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button type="submit" class="btn custom-btn">Registrar Usuario</button>
+    </div>
+  </form>
+</div>
+
+
+

@@ -1,0 +1,40 @@
+<div class="tour-container">
+  <h2 class="titulo">Lista de Tours</h2>
+
+  <div *ngIf="mensajeError" class="alert alert-danger text-center">
+    {{ mensajeError }}
+  </div>
+
+  <div *ngIf="tours.length > 0; else noTours">
+    <div class="row">
+      <div *ngFor="let tour of tours" class="col-md-4 mb-4">
+        <div class="card h-100 shadow">
+          <img
+            *ngIf="tour.imagetour && tour.imagetour.trim() !== ''"
+            [src]="getImageUrl(tour.imagetour)"
+            class="card-img-top"
+            alt="Imagen del tour"
+          />
+          <div class="card-body">
+            <h5 class="card-title">{{ tour.nombre }}</h5>
+            <p class="card-text"><strong>Tipo:</strong> {{ tour.tipo }}</p>
+            <p class="card-text"><strong>Ubicación:</strong> {{ tour.ubicacion }}</p>
+            <p class="card-text"><strong>Descripción:</strong> {{ tour.descripcion }}</p>
+            <p class="card-text"><strong>Precio Base:</strong> ${{ tour.preciobase }}</p>
+            <p class="card-text">
+              <strong>Disponibilidad:</strong>
+              <span *ngIf="tour.disponibilidad === 1" class="text-success">Disponible</span>
+              <span *ngIf="tour.disponibilidad === 2" class="text-danger">No disponible</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noTours>
+    <div>
+      No hay tours registrados.
+    </div>
+  </ng-template>
+</div>

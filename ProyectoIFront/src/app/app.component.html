@@ -1,0 +1,103 @@
+<div class="container-fluid nav-container">
+  <nav class="navbar navbar-expand-lg custom-navbar px-4">
+    <a class="navbar-brand text-light d-flex align-items-center" href="#">
+      <img src="assets/img/logo_rp.png" alt="Río Perdido Logo" style="height:50px; width:160px; margin-right: 10px;">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="d-flex w-100 justify-content-between align-items-center">
+
+        <ul class="navbar-nav d-flex align-items-center">
+          <ng-container *ngIf="identity?.role === 'admin'">
+
+            <!-- Menú Persona -->
+            @if (identity?.role === 'admin') {
+            <li class="nav-item user-dropdown mx-3" tabindex="0">
+              <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Persona</a>
+              <ul class="dropdown-content-css">
+                <li><a [routerLink]="['/persona/agregar']">Agregar Persona</a></li>
+                <li><a [routerLink]="['/persona/listar']">Listar Personas</a></li>
+                <li><a [routerLink]="['/persona/editar']">Editar Persona</a></li>
+              </ul>
+            </li>
+            }
+
+            
+            <!-- Menú Usuario -->
+             @if (identity?.role === 'admin') {
+            <li class="nav-item user-dropdown mx-3" tabindex="0">
+              <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Usuario</a>
+              <ul class="dropdown-content-css">
+                <li><a [routerLink]="['/usuario/agregar']">Agregar Usuario</a></li>
+                <li><a [routerLink]="['/usuario/listar']">Listar Usuarios</a></li>
+                <li><a [routerLink]="['/usuario/editar']">Editar Usuario</a></li>
+              </ul>
+            </li>
+          }
+          </ng-container>
+            
+            <!-- Menú Reserva -->
+             @if ((identity?.role === 'admin') || (identity?.role === 'cliente')) {
+            <li class="nav-item user-dropdown mx-3" tabindex="0">
+              <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Reserva</a>
+              <ul class="dropdown-content-css">
+                @if (identity?.role === 'admin'){<li><a [routerLink]="['/reservas']">Listar Reservas</a></li>}
+                <li><a [routerLink]="['/reservas/nueva']">Crear Reserva</a></li>
+                 <!-- <li><a [routerLink]="['/reservas/buscar/huesped']">Buscar por Huesped</a></li> -->
+              </ul>
+            </li>
+          }
+
+          <ng-container *ngIf="identity?.role === 'admin'">
+            <!-- Menú Tour -->
+             @if (identity?.role === 'admin') {
+            <li class="nav-item user-dropdown mx-3" tabindex="0">
+              <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Tour</a>
+              <ul class="dropdown-content-css">
+                <li><a routerLink="/tour/agregar">Agregar Tour</a></li>
+                <li><a routerLink="/tour/listar">Listar Tours</a></li>
+                <li><a routerLink="/tour/editar">Editar Tour</a></li>
+                <li><a routerLink="/tour/filtrar">Filtrar Tours</a></li>
+              </ul>
+            </li>
+          }
+      
+          </ng-container>
+        </ul>
+        
+
+        <ul class="navbar-nav d-flex align-items-center">
+          <!-- Si no hay usuario autenticado -->
+          <li class="nav-item mx-3" *ngIf="!identity">
+            <a class="nav-link text-light" [routerLink]="['/login']">Login</a>
+          </li>
+
+          <!-- Si hay usuario autenticado -->
+          <ng-container *ngIf="identity">
+            <li class="nav-item user-dropdown mx-3 d-flex align-items-center">
+              <span class="user-greeting text-light">Hola, {{ identity?.username }}</span>
+              <a class="nav-link p-0" href="#" role="button">
+                <img [src]="getUsuarioImageUrl(identity.image)" alt="Avatar"
+                  class="rounded-circle border border-secondary" width="40" height="40">
+              </a>
+
+              <!-- Usuario -->
+              <ul class="dropdown-content-css">
+                <li><a [routerLink]="['/usuario/actualizar']">Mi perfil</a></li>
+                <li><a href="#" (click)="logout()">Cerrar sesión</a></li>
+              </ul>
+            </li>
+          </ng-container>
+        </ul>
+
+      </div>
+    </div>
+  </nav>
+
+  <router-outlet></router-outlet>
+</div>

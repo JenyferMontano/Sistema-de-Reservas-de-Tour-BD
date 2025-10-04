@@ -1,0 +1,56 @@
+<div class="scroll-container">
+    <div *ngFor="let reserva of reservas" class="reserva-card">
+        <!-- Encabezado de la reserva -->
+        <div class="reserva-header">
+            <h3>Reserva #{{ reserva.numreserva }}</h3>
+            <p><strong>Fecha:</strong> {{ reserva.fechareserva | date:'short' }}</p>
+            <p><strong>Usuario:</strong> {{ reserva.nombreusuario }}</p>
+            <p><strong>Huésped:</strong> {{ reserva.nombrecliente }} {{ reserva.apellido_1 }} {{ reserva.apellido_2 }}
+            </p>
+
+            <div class="botones-accion-wide">
+                <button (click)="reserva.mostrarDetalles = !reserva.mostrarDetalles">
+                    {{ reserva.mostrarDetalles ? 'Ocultar Detalles' : 'Ver Detalles' }}
+                </button>
+
+                <button class="eliminar-btn derecha" (click)="eliminarReserva(reserva.numreserva)">
+                    Eliminar Reserva
+                </button>
+            </div>
+
+            <!-- Detalles desplegables -->
+            <div *ngIf="reserva.mostrarDetalles" class="detalles-section">
+                <table class="detalles-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Tour</th>
+                            <th>Personas</th>
+                            <th>Precio</th>
+                            <th>Descuento</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let detalle of detallesPorReserva[reserva.numreserva]">
+                            <td>{{ detalle.fecha }}</td>
+                            <td>{{ detalle.hora }}</td>
+                            <td>{{ detalle.nombretour }}</td>
+                            <td>{{ detalle.cantpersonas }}</td>
+                            <td>{{ detalle.precio | currency:'USD' }}</td>
+                            <td>{{ detalle.descuento | currency:'USD' }}</td>
+                            <td>{{ detalle.subtotal | currency:'USD' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Totales -->
+                <div class="resumen">
+                    <p><strong>Subtotal:</strong> {{ reserva.subtotal | currency:'USD' }}</p>
+                    <p><strong>Impuesto:</strong> {{ reserva.impuesto | currency:'USD' }}</p>
+                    <p><strong>Total:</strong> {{ reserva.total | currency:'USD' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>

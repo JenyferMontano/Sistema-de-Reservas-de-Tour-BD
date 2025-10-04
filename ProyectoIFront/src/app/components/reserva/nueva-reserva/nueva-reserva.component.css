@@ -1,0 +1,77 @@
+:root {
+  --color-base: #4f473e;
+  --color-hover: #3e372f;
+  --text-white: #ffffff;
+}
+
+.main-reserva-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.container-reserva {
+  flex: 1 1 400px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.titulo-reserva {
+  color: #3e372f;
+  font-weight: bold;
+}
+
+.carrusel-tours {
+  flex: 1 1 320px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.carrusel-tours .card {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.card.seleccionada {
+  border: 2px solid var(--color-base);
+  box-shadow: 0 4px 10px rgba(79, 71, 62, 0.3);
+}
+
+.imagen-tour {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  max-height: 200px;
+  object-fit: cover;
+}
+
+.boton-cafe {
+  background-color: #4f473e !important;
+  color: white !important;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.boton-cafe:hover {
+  background-color: #3e372f !important;
+}
+
+.boton-cafe.seleccionado {
+  background-color: #3e372f !important;
+}

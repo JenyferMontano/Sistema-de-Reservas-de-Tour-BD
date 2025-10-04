@@ -1,0 +1,91 @@
+<div class="main-reserva-layout">
+  <!-- Input ID de Huésped -->
+  <div class="container-reserva">
+    <h2 class="text-center mb-4 titulo-reserva">Reservar</h2>
+
+    <div class="mb-3">
+      <label for="huesped" class="form-label">ID de Huésped</label>
+      <input type="number" id="huesped" class="form-control" [(ngModel)]="huespedId" name="huesped" required>
+    </div>
+
+    <!-- Formulario para agregar un detalle -->
+    <form (submit)="agregarDetalle(); $event.preventDefault();">
+      <div class="mb-3">
+        <label for="fecha" class="form-label">Fecha</label>
+        <input type="date" id="fecha" class="form-control" [(ngModel)]="nuevoDetalle.fecha" name="fecha" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="hora" class="form-label">Hora</label>
+        <input type="time" id="hora" class="form-control" [(ngModel)]="nuevoDetalle.hora" name="hora" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="cantPersonas" class="form-label">Cantidad de Personas</label>
+        <input type="number" id="cantPersonas" class="form-control" [(ngModel)]="nuevoDetalle.cantPersonas" name="cantPersonas" required>
+      </div>
+
+      <!-- Solo para administradores -->
+      <div class="mb-3" *ngIf="rolUsuario === 'admin'">
+        <label for="descuento" class="form-label">Descuento</label>
+        <input type="number" id="descuento" class="form-control" [(ngModel)]="nuevoDetalle.descuento" name="descuento">
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="boton-cafe">Agregar Detalle</button>
+      </div>
+    </form>
+
+    <!-- Tabla de detalles agregados -->
+    <div *ngIf="detalles.length > 0" class="mt-4">
+      <h4>Detalles Agregados</h4>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Tour</th>
+            <th>Cantidad</th>
+            <th *ngIf="rolUsuario === 'admin'">Descuento</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of detalles; let i = index">
+            <td>{{ d.fecha }}</td>
+            <td>{{ d.hora }}</td>
+            <td>{{ d.tour }}</td>
+            <td>{{ d.cantPersonas }}</td>
+            <td *ngIf="rolUsuario === 'admin'">{{ d.descuento }}</td>
+            <td>
+              <button type="button" class="btn btn-danger btn-sm" (click)="eliminarDetalle(i)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="text-center">
+        <button type="button" class="boton-cafe" (click)="crearReserva()">Crear Reserva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carrusel -->
+  <div class="carrusel-tours">
+    <div class="card mb-3" *ngFor="let t of tours; trackBy: trackTour">
+      <img *ngIf="t.imagetour" [src]="tourService.getTourImageUrl(t.imagetour)" class="card-img-top imagen-tour" />
+      <div class="card-body">
+        <h5 class="card-title">{{ t.nombre }}</h5>
+        <p class="card-text">{{ t.descripcion }}</p>
+        <p><strong>Tipo:</strong> {{ t.tipo }}</p>
+        <p><strong>Precio:</strong> ${{ t.preciobase }}</p>
+        <div class="text-center">
+          <button type="button" class="boton-cafe" [ngClass]="{ 'seleccionado': nuevoDetalle.tour === t.idtour }"
+            (click)="nuevoDetalle.tour = t.idtour">
+            {{ nuevoDetalle.tour === t.idtour ? 'Seleccionado' : 'Seleccionar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

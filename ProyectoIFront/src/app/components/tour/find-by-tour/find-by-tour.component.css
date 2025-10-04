@@ -1,0 +1,13 @@
+.filtro-tours-box {
+  background-color: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+  text-align: center;
+}
+
+.filtro-tours-box h2 {
+  color: #333;
+}

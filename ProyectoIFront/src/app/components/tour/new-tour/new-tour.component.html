@@ -1,0 +1,69 @@
+<!-- Contenedor principal -->
+<div class="form-container container mt-4">
+  <h2 class="text-center">Registrar Tour</h2>
+
+  <form (ngSubmit)="crearTour()" #tourForm="ngForm">
+    <div class="row mb-3">
+      <div class="col">
+        <input type="number" class="form-control" placeholder="ID Tour" required [(ngModel)]="tour.idtour" name="idtour">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Nombre" required [(ngModel)]="tour.nombre" name="nombre">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <textarea class="form-control" placeholder="Descripción" rows="2" required [(ngModel)]="tour.descripcion" name="descripcion"></textarea>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Tipo" required [(ngModel)]="tour.tipo" name="tipo">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Ubicación" required [(ngModel)]="tour.ubicacion" name="ubicacion">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <input type="number"
+          step="0.01"
+          class="form-control"
+          placeholder="Precio Base"
+          required
+          [(ngModel)]="tour.preciobase"
+          name="preciobase"
+        />
+      </div>
+      <div class="col">
+        <select class="form-control" required [(ngModel)]="tour.disponibilidad" name="disponibilidad">
+          <option [ngValue]="1">Disponible</option>
+          <option [ngValue]="2">No Disponible</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <input type="file" class="form-control" (change)="uploadTourImage($event)" accept=".png,.jpg,.jpeg" />
+    </div>
+
+    <!-- Vista previa de imagen -->
+    <div *ngIf="imagePreview" class="text-center mb-3">
+      <img [src]="imagePreview" style="max-width: 250px; border-radius: 10px;" />
+    </div>
+
+    <!-- Botón de envío -->
+    <div class="text-center">
+      <button class="btn custom-btn" type="submit">Guardar Tour</button>
+    </div>
+
+    <!-- Mensajes -->
+    <div *ngIf="mensajeExito" class="alert alert-success mt-3 text-center" role="alert">
+      {{ mensajeExito }}
+    </div>
+    <div *ngIf="mensajeError" class="alert alert-danger mt-3 text-center" role="alert">
+      {{ mensajeError }}
+    </div>
+  </form>
+</div>

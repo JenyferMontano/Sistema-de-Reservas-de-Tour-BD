@@ -1,0 +1,30 @@
+.update-container {
+  background-color: rgba(255, 255, 255, 0.85); 
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  max-width: 1000px;
+  margin: 40px auto;
+}
+
+.titulo-centro {
+  text-align: center;
+  color: #1b130d;
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #4e3e2e;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.form-label {
+  font-weight: bold;
+}
