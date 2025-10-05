@@ -22,13 +22,12 @@ import (
 
 func CreateDetalleReserva(db *sql.DB, d Detallereserva) error {
 	_, err := db.Exec(
-		"EXEC pa_detalleReserva_insert @reserva=@p1, @fecha=@p2, @hora=@p3, @tour=@p4, @cantPersonas=@p5, @factura=@p6, @precio=@p7, @descuento=@p8, @subTotal=@p9",
+		"EXEC pa_detalleReserva_insert @reserva=@p1, @fecha=@p2, @hora=@p3, @tour=@p4, @cantPersonas=@p5, @precio=@p6, @descuento=@p7, @subTotal=@p8",
 		d.Reserva,
 		d.Fecha,
 		d.Hora,
 		d.Tour,
 		d.Cantpersonas,
-		d.Factura,
 		d.Precio,
 		d.Descuento,
 		d.Subtotal,
@@ -91,7 +90,6 @@ type GetAllDetalleReservasRow struct {
 	Cantpersonas int32         `json:"cantpersonas"`
 	Nombretour   string        `json:"nombretour"`
 	Numreserva   int32         `json:"numreserva"`
-	Idfactura    sql.NullInt32 `json:"idfactura"`
 	Precio       float64       `json:"precio"`
 	Descuento    float64       `json:"descuento"`
 	Subtotal     float64       `json:"subtotal"`
@@ -114,7 +112,6 @@ func GetAllDetalleReservas(db *sql.DB) ([]GetAllDetalleReservasRow, error) {
 			&d.Cantpersonas,
 			&d.Nombretour,
 			&d.Numreserva,
-			&d.Idfactura,
 			&d.Precio,
 			&d.Descuento,
 			&d.Subtotal,
@@ -152,7 +149,6 @@ func GetDetalleReservaById(db *sql.DB, id int32) (*Detallereserva, error) {
 		&d.Hora,
 		&d.Tour,
 		&d.Cantpersonas,
-		&d.Factura,
 		&d.Precio,
 		&d.Descuento,
 		&d.Subtotal,
@@ -204,7 +200,6 @@ func GetDetalleReservaByReservaId(db *sql.DB, reserva int32) ([]Detallereserva, 
 			&d.Hora,
 			&d.Tour,
 			&d.Cantpersonas,
-			&d.Factura,
 			&d.Precio,
 			&d.Descuento,
 			&d.Subtotal,
@@ -225,19 +220,6 @@ func GetFacturaByDetalleReservaId(db *sql.DB, id int32) (sql.NullInt32, error) {
 	return factura, err
 }*/
 
-func GetFacturaByDetalleReservaId(db *sql.DB, id int32) (sql.NullInt32, error) {
-	row := db.QueryRow(
-		"EXEC pa_detalleReserva_getFactura @idDetalle=@p1",
-		id,
-	)
-	var factura sql.NullInt32
-	err := row.Scan(&factura)
-	if err != nil {
-		return sql.NullInt32{}, err
-	}
-	return factura, nil
-}
-
 /*
 func UpdateDetalleReserva(db *sql.DB, d Detallereserva) error {
 	_, err := db.Exec(
@@ -257,17 +239,15 @@ func UpdateDetalleReserva(db *sql.DB, d Detallereserva) error {
 			@hora=@p4,
 			@tour=@p5,
 			@cantPersonas=@p6,
-			@factura=@p7,
-			@precio=@p8,
-			@descuento=@p9,
-			@subTotal=@p10`,
+			@precio=@p7,
+			@descuento=@p8,
+			@subTotal=@p9`,
 		d.Iddetalle,
 		d.Reserva,
 		d.Fecha,
 		d.Hora,
 		d.Tour,
 		d.Cantpersonas,
-		d.Factura,
 		d.Precio,
 		d.Descuento,
 		d.Subtotal,

@@ -29,6 +29,7 @@ type Detallefactura struct {
 	Preciotour       float64         `json:"preciotour"`
 	Descuento        sql.NullFloat64 `json:"descuento"`
 	Subtotal         float64         `json:"subtotal"`
+	DetalleReserva   sql.NullInt32   `json:"detalleReserva"`
 }
 
 type Detallereserva struct {
@@ -38,7 +39,6 @@ type Detallereserva struct {
 	Hora         string        `json:"hora"`
 	Tour         int32         `json:"tour"`
 	Cantpersonas int32         `json:"cantpersonas"`
-	Factura      sql.NullInt32 `json:"factura"`
 	Precio       float64       `json:"precio"`
 	Descuento    float64       `json:"descuento"`
 	Subtotal     float64       `json:"subtotal"`
@@ -48,6 +48,7 @@ type Detallereserva struct {
 type Factura struct {
 	Idfactura     int32     `json:"idfactura"`
 	Persona       int32     `json:"persona"`
+	Reserva       int32     `json:"reserva"`
 	Estadofactura string    `json:"estadofactura"`
 	Fechafactura  time.Time `json:"fechafactura"`
 	Metodopago    string    `json:"metodopago"`

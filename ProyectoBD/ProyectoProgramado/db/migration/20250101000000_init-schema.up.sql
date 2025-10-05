@@ -15,23 +15,6 @@ CREATE TABLE persona (
 );
 GO
 
--- Tabla factura
-CREATE TABLE factura (
-    idFactura INT IDENTITY(1,1) PRIMARY KEY,
-    persona INT NOT NULL,
-    estadoFactura NVARCHAR(20) NOT NULL,
-    fechaFactura DATE NOT NULL,
-    metodoPago NVARCHAR(15) NOT NULL,
-    iva FLOAT NOT NULL,
-    subtotal FLOAT NOT NULL,
-    total FLOAT NOT NULL,
-    CONSTRAINT FK_factura_persona FOREIGN KEY (persona)
-        REFERENCES persona (idPersona)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-GO
-
 -- Tabla tour
 CREATE TABLE tour (
     idTour INT IDENTITY(1,1) PRIMARY KEY,
@@ -42,26 +25,6 @@ CREATE TABLE tour (
     precioBase FLOAT NOT NULL,
     ubicacion NVARCHAR(45) NOT NULL,
     imageTour NVARCHAR(255) NOT NULL
-);
-GO
-
--- Tabla detallefactura
-CREATE TABLE detallefactura (
-    idDetalleFactura INT IDENTITY(1,1) PRIMARY KEY,
-    tour INT NOT NULL,
-    cantTour INT NOT NULL,
-    factura INT NOT NULL,
-    precioTour FLOAT NOT NULL,
-    descuento FLOAT NULL,
-    subTotal FLOAT NOT NULL,
-    CONSTRAINT FK_detallefactura_factura FOREIGN KEY (factura)
-        REFERENCES factura (idFactura)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT FK_detallefactura_tour FOREIGN KEY (tour)
-        REFERENCES tour (idTour)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
 );
 GO
 
@@ -100,6 +63,28 @@ CREATE TABLE reserva (
 );
 GO
 
+-- Tabla factura
+CREATE TABLE factura (
+    idFactura INT IDENTITY(1,1) PRIMARY KEY,
+    persona INT NOT NULL,
+    reserva INT NOT NULL,  
+    estadoFactura NVARCHAR(20) NOT NULL,
+    fechaFactura DATE NOT NULL,
+    metodoPago NVARCHAR(15) NOT NULL,
+    iva FLOAT NOT NULL,
+    subtotal FLOAT NOT NULL,
+    total FLOAT NOT NULL,
+    CONSTRAINT FK_factura_persona FOREIGN KEY (persona)
+        REFERENCES persona (idPersona)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_factura_reserva FOREIGN KEY (reserva)
+        REFERENCES reserva (numReserva)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+GO
+
 -- Tabla detallereserva
 CREATE TABLE detallereserva (
     idDetalle INT IDENTITY(1,1) PRIMARY KEY,
@@ -108,14 +93,9 @@ CREATE TABLE detallereserva (
     hora NVARCHAR(15) NOT NULL,
     tour INT NOT NULL,
     cantPersonas INT NOT NULL,
-    factura INT NULL,
     precio FLOAT NOT NULL,
     descuento FLOAT NOT NULL,
     subTotal FLOAT NOT NULL,
-    CONSTRAINT FK_detallereserva_factura FOREIGN KEY (factura)
-        REFERENCES factura (idFactura)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
     CONSTRAINT FK_detallereserva_reserva FOREIGN KEY (reserva)
         REFERENCES reserva (numReserva)
         ON DELETE CASCADE
@@ -123,6 +103,31 @@ CREATE TABLE detallereserva (
     CONSTRAINT FK_detallereserva_tour FOREIGN KEY (tour)
         REFERENCES tour (idTour)
         ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+GO
+
+-- Tabla detallefactura
+CREATE TABLE detallefactura (
+    idDetalleFactura INT IDENTITY(1,1) PRIMARY KEY,
+    factura INT NOT NULL,
+    tour INT NOT NULL,
+    cantTour INT NOT NULL,
+    precioTour FLOAT NOT NULL,
+    descuento FLOAT NULL,
+    subTotal FLOAT NOT NULL,
+    detalleReserva INT NULL,
+    CONSTRAINT FK_detallefactura_factura FOREIGN KEY (factura)
+        REFERENCES factura (idFactura)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_detallefactura_tour FOREIGN KEY (tour)
+        REFERENCES tour (idTour)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_detallefactura_detallereserva FOREIGN KEY (detalleReserva)
+        REFERENCES detallereserva (idDetalle)
+        ON DELETE SET NULL
         ON UPDATE CASCADE
 );
 GO
