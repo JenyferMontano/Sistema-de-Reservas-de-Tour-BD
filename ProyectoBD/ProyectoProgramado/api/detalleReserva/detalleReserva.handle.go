@@ -23,7 +23,6 @@ type createDetalleReservaRequest struct {
 	Hora         string `json:"hora" binding:"required"`
 	Tour         int32  `json:"tour" binding:"required"`
 	CantPersonas int32  `json:"cantPersonas" binding:"required"`
-	Factura      *int32 `json:"factura"`
 	//Precio       float64 `json:"precio" binding:"required"`
 	Descuento float64 `json:"descuento"`
 	//SubTotal     float64 `json:"subTotal" binding:"required"`
@@ -61,7 +60,6 @@ func (h *Handler) CreateDetalleReserva(ctx *gin.Context) {
 		Hora:         req.Hora,
 		Tour:         req.Tour,
 		Cantpersonas: req.CantPersonas,
-		Factura:      toNullInt32(req.Factura),
 		Precio:       precioBase,
 		Descuento:    req.Descuento,
 		Subtotal:     subTotal,
@@ -118,7 +116,6 @@ type updateDetalleReservaRequest struct {
 	Hora         string `json:"hora" binding:"required"`
 	Tour         int32  `json:"tour" binding:"required"`
 	CantPersonas int32  `json:"cantPersonas" binding:"required"`
-	Factura      *int32 `json:"factura"`
 	//Precio       float64 `json:"precio" binding:"required"`
 	Descuento float64 `json:"descuento"`
 	//SubTotal     float64 `json:"subTotal" binding:"required"`
@@ -156,7 +153,6 @@ func (h *Handler) UpdateDetalleReserva(ctx *gin.Context) {
 		Hora:         req.Hora,
 		Tour:         req.Tour,
 		Cantpersonas: req.CantPersonas,
-		Factura:      toNullInt32(req.Factura),
 		Precio:       precioBase,
 		Descuento:    req.Descuento,
 		Subtotal:     subTotal,

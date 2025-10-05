@@ -16,7 +16,6 @@ export interface DetalleReserva {
   hora: string;
   tour: number;
   cantPersonas: number;
-  factura: number | null;
   precio: number;
   descuento: number;
   subtotal: number;

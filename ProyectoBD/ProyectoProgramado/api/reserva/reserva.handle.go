@@ -45,10 +45,10 @@ func (h *Handler) CreateReservaConDetalles(ctx *gin.Context) {
 		return
 	}
 	fechaReserva, err := time.Parse("02/01/2006 15:04", req.Fecha)
-if err != nil {
-    ctx.JSON(http.StatusBadRequest, gin.H{"error": "Formato de fechaReserva inválido"})
-    return
-}
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Formato de fechaReserva inválido"})
+		return
+	}
 	var subTotal float64 = 0
 	var detallesFinales []dto.Detallereserva
 	for _, d := range req.Detalles {
@@ -78,7 +78,6 @@ if err != nil {
 			Hora:         d.Hora,
 			Tour:         d.Tour,
 			Cantpersonas: d.CantPersonas,
-			Factura:      sql.NullInt32{Valid: false},
 			Precio:       precio,
 			Descuento:    d.Descuento,
 			Subtotal:     subTotalDetalle,
@@ -101,15 +100,15 @@ if err != nil {
 		return
 	}
 	for _, d := range detallesFinales {
-	d.Reserva = idReserva
-	fmt.Printf("Intentando guardar detalle: %+v\n", d)
-	err := dto.CreateDetalleReserva(h.db, d)
-	if err != nil {
-		fmt.Println("Error SQL:", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar detalles de reserva"})
-		return
+		d.Reserva = idReserva
+		fmt.Printf("Intentando guardar detalle: %+v\n", d)
+		err := dto.CreateDetalleReserva(h.db, d)
+		if err != nil {
+			fmt.Println("Error SQL:", err)
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar detalles de reserva"})
+			return
+		}
 	}
-}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Reserva creada correctamente", "numReserva": idReserva})
 }
 
@@ -191,7 +190,7 @@ func (h *Handler) UpdateEstadoReserva(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	
+
 	err := dto.UpdateReservaEstado(h.db, req.NumReserva, req.EstadoReserva)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -199,8 +198,6 @@ func (h *Handler) UpdateEstadoReserva(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Estado actualizado correctamente"})
 }
-
-
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
