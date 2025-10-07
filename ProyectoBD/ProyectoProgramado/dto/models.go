@@ -20,12 +20,11 @@ type Persona struct {
 	Correo      string    `json:"correo"`
 }
 
-
 type Detallefactura struct {
 	Iddetallefactura int32           `json:"iddetallefactura"`
+	Factura          int32           `json:"factura"`
 	Tour             int32           `json:"tour"`
 	Canttour         int32           `json:"canttour"`
-	Factura          int32           `json:"factura"`
 	Preciotour       float64         `json:"preciotour"`
 	Descuento        sql.NullFloat64 `json:"descuento"`
 	Subtotal         float64         `json:"subtotal"`
@@ -44,7 +43,6 @@ type Detallereserva struct {
 	Subtotal     float64       `json:"subtotal"`
 }
 
-
 type Factura struct {
 	Idfactura     int32     `json:"idfactura"`
 	Persona       int32     `json:"persona"`
@@ -56,8 +54,6 @@ type Factura struct {
 	Subtotal      float64   `json:"subtotal"`
 	Total         float64   `json:"total"`
 }
-
-
 
 type Reserva struct {
 	Numreserva    int32     `json:"numreserva"`
