@@ -101,8 +101,6 @@ func GetFacturaByReserva(db *sql.DB, numReserva int32) (FacturaBaseRows, error) 
 	return f, nil
 }
 
-//FALTA GETALL Y IDFACTURA
-
 type FacturaUsuarioRows struct {
 	IDFactura     int32     `json:"idFactura"`
 	EstadoFactura string    `json:"estadoFactura"`
@@ -141,4 +139,96 @@ func GetFacturasByUsuario(db *sql.DB, usuario string) ([]FacturaUsuarioRows, err
 	}
 
 	return facturas, nil
+}
+
+type GetAllFacturasRow struct {
+	Idfactura     int32     `json:"idfactura"`
+	Estadofactura string    `json:"estadofactura"`
+	Fechafactura  time.Time `json:"fechafactura"`
+	Metodopago    string    `json:"metodopago"`
+	Iva           float64   `json:"iva"`
+	Subtotal      float64   `json:"subtotal"`
+	Total         float64   `json:"total"`
+	Nombrepersona string    `json:"nombrepersona"`
+	Apellido1     string    `json:"apellido_1"`
+	Apellido2     string    `json:"apellido_2"`
+	Numreserva    int32     `json:"numreserva"`
+	Estadoreserva string    `json:"estadoreserva"`
+}
+
+func GetAllFacturas(db *sql.DB) ([]GetAllFacturasRow, error) {
+	rows, err := db.Query("SELECT * FROM vw_facturasGetAll")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var facturas []GetAllFacturasRow
+	for rows.Next() {
+		var f GetAllFacturasRow
+		err := rows.Scan(
+			&f.Idfactura,
+			&f.Estadofactura,
+			&f.Fechafactura,
+			&f.Metodopago,
+			&f.Iva,
+			&f.Subtotal,
+			&f.Total,
+			&f.Nombrepersona,
+			&f.Apellido1,
+			&f.Apellido2,
+			&f.Numreserva,
+			&f.Estadoreserva,
+		)
+		if err != nil {
+			return nil, err
+		}
+		facturas = append(facturas, f)
+	}
+
+	return facturas, nil
+}
+
+type GetFacturaByIdRow struct {
+	Idfactura     int32     `json:"idfactura"`
+	Estadofactura string    `json:"estadofactura"`
+	Fechafactura  time.Time `json:"fechafactura"`
+	Metodopago    string    `json:"metodopago"`
+	Iva           float64   `json:"iva"`
+	Subtotal      float64   `json:"subtotal"`
+	Total         float64   `json:"total"`
+	Idpersona     int32     `json:"idpersona"`
+	Nombrepersona string    `json:"nombrepersona"`
+	Apellido1     string    `json:"apellido_1"`
+	Apellido2     string    `json:"apellido_2"`
+	Numreserva    int32     `json:"numreserva"`
+	Estadoreserva string    `json:"estadoreserva"`
+	Fechareserva  time.Time `json:"fechareserva"`
+}
+
+func GetFacturaById(db *sql.DB, id int32) (*GetFacturaByIdRow, error) {
+	row := db.QueryRow("EXEC pa_facturaGetById @idFactura=@id", sql.Named("id", id))
+
+	var f GetFacturaByIdRow
+	err := row.Scan(
+		&f.Idfactura,
+		&f.Estadofactura,
+		&f.Fechafactura,
+		&f.Metodopago,
+		&f.Iva,
+		&f.Subtotal,
+		&f.Total,
+		&f.Idpersona,
+		&f.Nombrepersona,
+		&f.Apellido1,
+		&f.Apellido2,
+		&f.Numreserva,
+		&f.Estadoreserva,
+		&f.Fechareserva,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &f, nil
 }
