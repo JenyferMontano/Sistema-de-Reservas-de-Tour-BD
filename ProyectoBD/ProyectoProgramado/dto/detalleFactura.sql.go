@@ -183,4 +183,3 @@ func MigrateDetalleReservaToDetalleFactura(db *sql.DB, idFactura, idReserva int3
 	}
 	return nil
 }
-
