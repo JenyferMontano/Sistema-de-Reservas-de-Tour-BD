@@ -74,6 +74,10 @@ type FacturaBaseRows struct {
 	Iva           float64   `json:"iva"`
 	Subtotal      float64   `json:"subtotal"`
 	Total         float64   `json:"total"`
+	Nombrepersona string    `json:"nombrepersona"`
+	Apellido1     string    `json:"apellido_1"`
+	Apellido2     string    `json:"apellido_2"`
+	Estadoreserva string    `json:"estadoreserva"`
 }
 
 func GetFacturaByReserva(db *sql.DB, numReserva int32) (FacturaBaseRows, error) {
@@ -84,13 +88,14 @@ func GetFacturaByReserva(db *sql.DB, numReserva int32) (FacturaBaseRows, error) 
 	row := db.QueryRow(query, sql.Named("reserva", numReserva))
 
 	err := row.Scan(
-		&f.IDFactura, &f.EstadoFactura, &fecha, &f.MetodoPago,
-		&f.Iva, &f.Subtotal, &f.Total,
+		&f.IDFactura, &f.Persona, &f.Reserva, &f.EstadoFactura, &fecha, &f.MetodoPago,
+		&f.Iva, &f.Subtotal, &f.Total, &f.Nombrepersona,
+		&f.Apellido1,
+		&f.Apellido2,
+		&f.Estadoreserva,
 	)
 
 	f.FechaFactura = fecha
-	f.Reserva = numReserva // El PA no devuelve el ID de reserva, pero lo conocemos por el input.
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return FacturaBaseRows{}, fmt.Errorf("no se encontró factura para la reserva %d: %w", numReserva, err)
@@ -106,7 +111,13 @@ type FacturaUsuarioRows struct {
 	EstadoFactura string    `json:"estadoFactura"`
 	FechaFactura  time.Time `json:"fechaFactura"`
 	MetodoPago    string    `json:"metodoPago"`
+	Iva           float64   `json:"iva"`
+	Subtotal      float64   `json:"subtotal"`
 	Total         float64   `json:"total"`
+	Idpersona     int32     `json:"idpersona"`
+	Nombrepersona string    `json:"nombrepersona"`
+	Apellido1     string    `json:"apellido_1"`
+	Apellido2     string    `json:"apellido_2"`
 	NumReserva    int32     `json:"numReserva"`
 	EstadoReserva string    `json:"estadoReserva"`
 }
@@ -125,7 +136,19 @@ func GetFacturasByUsuario(db *sql.DB, usuario string) ([]FacturaUsuarioRows, err
 		var f FacturaUsuarioRows
 		var fecha time.Time
 		err := rows.Scan(
-			&f.IDFactura, &f.EstadoFactura, &fecha, &f.MetodoPago, &f.Total, &f.NumReserva, &f.EstadoReserva,
+			&f.IDFactura,
+			&f.EstadoFactura,
+			&f.FechaFactura,
+			&f.MetodoPago,
+			&f.Iva,
+			&f.Subtotal,
+			&f.Total,
+			&f.Idpersona,
+			&f.Nombrepersona,
+			&f.Apellido1,
+			&f.Apellido2,
+			&f.NumReserva,
+			&f.EstadoReserva,
 		)
 		f.FechaFactura = fecha
 		if err != nil {
@@ -149,9 +172,11 @@ type GetAllFacturasRow struct {
 	Iva           float64   `json:"iva"`
 	Subtotal      float64   `json:"subtotal"`
 	Total         float64   `json:"total"`
+	Idpersona     int32     `json:"idpersona"`
 	Nombrepersona string    `json:"nombrepersona"`
 	Apellido1     string    `json:"apellido_1"`
 	Apellido2     string    `json:"apellido_2"`
+	Usuario       string    `json:"usuario"`
 	Numreserva    int32     `json:"numreserva"`
 	Estadoreserva string    `json:"estadoreserva"`
 }
@@ -174,9 +199,11 @@ func GetAllFacturas(db *sql.DB) ([]GetAllFacturasRow, error) {
 			&f.Iva,
 			&f.Subtotal,
 			&f.Total,
+			&f.Idpersona,
 			&f.Nombrepersona,
 			&f.Apellido1,
 			&f.Apellido2,
+			&f.Usuario,
 			&f.Numreserva,
 			&f.Estadoreserva,
 		)
