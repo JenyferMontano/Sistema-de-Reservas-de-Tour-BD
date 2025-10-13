@@ -27,9 +27,9 @@
             </li>
             }
 
-            
+
             <!-- Menú Usuario -->
-             @if (identity?.role === 'admin') {
+            @if (identity?.role === 'admin') {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Usuario</a>
               <ul class="dropdown-content-css">
@@ -38,24 +38,50 @@
                 <li><a [routerLink]="['/usuario/editar']">Editar Usuario</a></li>
               </ul>
             </li>
-          }
+            }
           </ng-container>
-            
-            <!-- Menú Reserva -->
-             @if ((identity?.role === 'admin') || (identity?.role === 'cliente')) {
+
+          <!-- Menú Reserva -->
+          <!-- @if ((identity?.role === 'admin') || (identity?.role === 'cliente')) {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Reserva</a>
               <ul class="dropdown-content-css">
                 @if (identity?.role === 'admin'){<li><a [routerLink]="['/reservas']">Listar Reservas</a></li>}
                 <li><a [routerLink]="['/reservas/nueva']">Crear Reserva</a></li>
-                 <!-- <li><a [routerLink]="['/reservas/buscar/huesped']">Buscar por Huesped</a></li> -->
+               zzz   <li><a [routerLink]="['/reservas/buscar/huesped']">Buscar por Huesped</a></li> --
               </ul>
             </li>
+          } -->
+          @if ((identity?.role === 'admin') || (identity?.role === 'cliente')) {
+          <li class="nav-item user-dropdown mx-3" tabindex="0">
+            <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Reserva</a>
+            <ul class="dropdown-content-css">
+              @if (identity?.role === 'admin') {
+              <li><a [routerLink]="['/reservas']">Listar Reservas</a></li>
+              }
+              <li><a [routerLink]="['/reservas/nueva']">Crear Reserva</a></li>
+
+              <!-- NUEVO: Solo visible para clientes -->
+              @if (identity?.role === 'cliente') {
+              <li><a [routerLink]="['/reservas/mis-reservas']">Mis Reservas</a></li>
+              }
+            </ul>
+          </li>
           }
+
+                <!-- Menú Facturas (solo visible para clientes) -->
+            @if (identity?.role === 'cliente') {
+            <li class="nav-item user-dropdown mx-3" tabindex="0">
+              <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Facturas</a>
+              <ul class="dropdown-content-css">
+                <li><a [routerLink]="['/facturas/mis-facturas']">Mis Facturas</a></li>
+              </ul>
+            </li>
+            }
 
           <ng-container *ngIf="identity?.role === 'admin'">
             <!-- Menú Tour -->
-             @if (identity?.role === 'admin') {
+            @if (identity?.role === 'admin') {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Tour</a>
               <ul class="dropdown-content-css">
@@ -65,11 +91,10 @@
                 <li><a routerLink="/tour/filtrar">Filtrar Tours</a></li>
               </ul>
             </li>
-          }
-      
+            }
           </ng-container>
         </ul>
-        
+
 
         <ul class="navbar-nav d-flex align-items-center">
           <!-- Si no hay usuario autenticado -->

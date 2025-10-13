@@ -134,7 +134,6 @@ func GetFacturasByUsuario(db *sql.DB, usuario string) ([]FacturaUsuarioRows, err
 
 	for rows.Next() {
 		var f FacturaUsuarioRows
-		var fecha time.Time
 		err := rows.Scan(
 			&f.IDFactura,
 			&f.EstadoFactura,
@@ -150,7 +149,6 @@ func GetFacturasByUsuario(db *sql.DB, usuario string) ([]FacturaUsuarioRows, err
 			&f.NumReserva,
 			&f.EstadoReserva,
 		)
-		f.FechaFactura = fecha
 		if err != nil {
 			return nil, fmt.Errorf("error al mapear resultado de factura por usuario: %w", err)
 		}
@@ -163,6 +161,65 @@ func GetFacturasByUsuario(db *sql.DB, usuario string) ([]FacturaUsuarioRows, err
 
 	return facturas, nil
 }
+
+type FacturaPersonaRows struct {
+	IDFactura     int32     `json:"idFactura"`
+	EstadoFactura string    `json:"estadoFactura"`
+	FechaFactura  time.Time `json:"fechaFactura"`
+	MetodoPago    string    `json:"metodoPago"`
+	Iva           float64   `json:"iva"`
+	Subtotal      float64   `json:"subtotal"`
+	Total         float64   `json:"total"`
+	Idpersona     int32     `json:"idpersona"`
+	Nombrepersona string    `json:"nombrepersona"`
+	Apellido1     string    `json:"apellido_1"`
+	Apellido2     string    `json:"apellido_2"`
+	NumReserva    int32     `json:"numReserva"`
+	EstadoReserva string    `json:"estadoReserva"`
+	FechaReserva  time.Time `json:"fechareserva"`
+}
+
+func GetFacturasByPersona(db *sql.DB, idPersona int32) ([]FacturaPersonaRows, error) {
+	query := "EXEC pa_facturasGetByPersona @idPersona"
+	rows, err := db.Query(query, sql.Named("idPersona", idPersona))
+	if err != nil {
+		return nil, fmt.Errorf("error al consultar facturas por persona: %w", err)
+	}
+	defer rows.Close()
+
+	var facturas []FacturaPersonaRows
+
+	for rows.Next() {
+		var f FacturaPersonaRows
+		err := rows.Scan(
+			&f.IDFactura,
+			&f.EstadoFactura,
+			&f.FechaFactura,
+			&f.MetodoPago,
+			&f.Iva,
+			&f.Subtotal,
+			&f.Total,
+			&f.Idpersona,
+			&f.Nombrepersona,
+			&f.Apellido1,
+			&f.Apellido2,
+			&f.NumReserva,
+			&f.EstadoReserva,
+			&f.FechaReserva,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error al mapear resultado de factura por persona: %w", err)
+		}
+		facturas = append(facturas, f)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error al iterar sobre resultados de factura por persona: %w", err)
+	}
+
+	return facturas, nil
+}
+
 
 type GetAllFacturasRow struct {
 	Idfactura     int32     `json:"idfactura"`

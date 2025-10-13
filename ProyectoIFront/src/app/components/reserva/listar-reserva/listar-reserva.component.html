@@ -13,6 +13,10 @@
                     {{ reserva.mostrarDetalles ? 'Ocultar Detalles' : 'Ver Detalles' }}
                 </button>
 
+                <button (click)="crearFactura(reserva)" class="facturar-btn">
+                    Facturar
+                </button>
+
                 <button class="eliminar-btn derecha" (click)="eliminarReserva(reserva.numreserva)">
                     Eliminar Reserva
                 </button>

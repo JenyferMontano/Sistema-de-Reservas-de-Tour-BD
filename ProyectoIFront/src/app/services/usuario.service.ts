@@ -60,6 +60,15 @@ export class UsuarioService {
     return this._http.get<Usuario>(this.url + 'usuario/' + username, options);
   }
 
+  getUsuarioByUsername(username: string, token: string): Observable<Usuario> {
+  const accessToken = 'Bearer ' + token;
+  const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', accessToken);
+
+  return this._http.get<Usuario>(this.url + 'usuario/' + username, { headers });
+}
+
   eliminarUsuario(username: string, token: any): Observable<any> {
     let accessToken = 'Bearer ' + token;
     let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', accessToken);

@@ -16,6 +16,8 @@ import { ListTourComponent } from './components/tour/list-tour/list-tour.compone
 import { EditTourComponent } from './components/tour/edit-tour/edit-tour.component';
 import { FindByTourComponent } from './components/tour/find-by-tour/find-by-tour.component';
 import { BuscarReservaHuespedComponent } from './components/reserva/buscar-reserva-huesped/buscar-reserva-huesped.component';
+import { MisReservasUsuarioComponent } from './components/reserva/mis-reservas-usuario/mis-reservas-usuario.component';
+import { MisFacturasUsuarioComponent } from './components/factura/mis-facturas-usuario/mis-facturas-usuario.component';
 
 
 export const routes: Routes = [
@@ -31,10 +33,13 @@ export const routes: Routes = [
     { path: 'reservas', component: ListarReservaComponent },
     { path: 'reservas/nueva', component: NuevaReservaComponent },
     { path: 'reservas/buscar/huesped', component: BuscarReservaHuespedComponent },
+    { path: 'reservas/mis-reservas', component: MisReservasUsuarioComponent },
     { path: 'tour/agregar', component: NewTourComponent },
     { path: 'tour/listar', component: ListTourComponent },
     { path: 'tour/editar', component: EditTourComponent },
     { path: 'tour/filtrar', component: FindByTourComponent },
+    { path: 'facturas/mis-facturas', component: MisFacturasUsuarioComponent },
+
 
 
     { path: '**', component: ErrorComponent }

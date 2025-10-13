@@ -18,10 +18,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *sql.DB, builder security.Builder, t
 	)
 	adminGroup.POST("/", h.CreateUsuario)
 	adminGroup.GET("/", h.GetAllUsuarios)
-	adminGroup.GET("/:username", h.GetUsuarioByUsername)
+	//adminGroup.GET("/:username", h.GetUsuarioByUsername)
 	adminGroup.DELETE("/:username", h.DeleteUsuario)
 
 	rg.PUT("/:username", middleware.AuthMiddleware(builder), h.UpdateUsuario)
+	rg.GET("/:username", middleware.AuthMiddleware(builder), h.GetUsuarioByUsername)
 	rg.POST("/upload", middleware.AuthMiddleware(builder), h.uploadUsuarioImg)
 	rg.GET("/images/:name", h.getUsuarioImg) //publico
 }

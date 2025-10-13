@@ -77,10 +77,10 @@ export interface FacturaListALL {
  * Corresponde a FacturaUsuarioRows en Go.
  */
 export interface FacturaList {
-  idfactura: number;
-  estadofactura: string;
-  fechafactura: string;
-  metodopago: string;
+  idFactura: number;
+  estadoFactura: string;
+  fechaFactura: string;
+  metodoPago: string;
   iva: number;
   subtotal: number;
   total: number;
@@ -92,9 +92,10 @@ export interface FacturaList {
   apellido_2: string;
 
   // Datos de la Reserva
-  numreserva: number;
-  estadoreserva: string;
+  numReserva: number;
+  estadoReserva: string;
 }
+
 
 /**
  * @interface FacturaUpdateEstado

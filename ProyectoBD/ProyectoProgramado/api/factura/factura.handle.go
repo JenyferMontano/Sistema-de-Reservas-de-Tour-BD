@@ -3,9 +3,11 @@ package factura
 import (
 	"ProyectoProgramadoI/dto"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -165,7 +167,7 @@ func (h *Handler) DeleteFactura(ctx *gin.Context) {
 }
 
 // Obtener facturas por usuario
-func (h *Handler) GetFacturasByUsuario(ctx *gin.Context) {
+/*func (h *Handler) GetFacturasByUsuario(ctx *gin.Context) {
 	usuario := ctx.Param("usuario")
 	facturas, err := dto.GetFacturasByUsuario(h.db, usuario)
 	if err != nil {
@@ -173,7 +175,26 @@ func (h *Handler) GetFacturasByUsuario(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, facturas)
+} */
+
+// Obtener facturas por persona
+func (h *Handler) GetFacturasByPersona(ctx *gin.Context) {
+	idStr := ctx.Param("idPersona")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID de persona inválido"})
+		return
+	}
+
+	facturas, err := dto.GetFacturasByPersona(h.db, int32(id))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al consultar facturas de la persona: " + err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, facturas)
 }
+
 
 // Obtener factura por reserva
 func (h *Handler) GetFacturaByReserva(ctx *gin.Context) {
@@ -190,6 +211,51 @@ func (h *Handler) GetFacturaByReserva(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, factura)
+}
+
+func (h *Handler) GetFacturaPDF(ctx *gin.Context) {
+	// 1. Obtener el ID de la factura desde la URL
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID de factura inválido"})
+		return
+	}
+	idFactura := int32(id)
+
+	// 2. Obtener los datos de la factura y sus detalles desde la BD
+	facturaData, err := dto.GetFacturaById(h.db, idFactura)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, gin.H{"message": "Factura no encontrada"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener datos de la factura: " + err.Error()})
+		}
+		return
+	}
+
+	detallesData, err := dto.GetDetalleFacturaByFactura(h.db, idFactura)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener detalles de la factura: " + err.Error()})
+		return
+	}
+
+	// 3. Generar el PDF usando la función que creamos
+	pdf, err := GenerateInvoicePDF(facturaData, detallesData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al generar el PDF: " + err.Error()})
+		return
+	}
+
+	// 4. Configurar las cabeceras HTTP para la descarga del PDF
+	ctx.Header("Content-Type", "application/pdf")
+	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"factura-%06d.pdf\"", idFactura))
+
+	// 5. Enviar el PDF como respuesta
+	if err := pdf.Output(ctx.Writer); err != nil {
+		// Loguear el error internamente, ya no se puede enviar una respuesta JSON
+		fmt.Printf("Error al escribir el PDF en la respuesta: %v\n", err)
+	}
 }
 
 

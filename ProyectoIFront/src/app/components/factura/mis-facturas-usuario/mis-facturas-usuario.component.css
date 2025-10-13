@@ -4,10 +4,16 @@
   padding: 1.5rem;
 }
 
+.botones-accion-wide {
+    display: flex;
+    gap: 10px; /* Espacio entre los botones */
+    margin-top: 0.75rem;
+}
+
 .scroll-container {
   width: 100%;
   max-width: 900px;
-  height: 80vh; /* Altura visible con scroll si se llena */
+  height: 80vh;
   overflow-y: auto;
   padding-right: 0.5rem;
 }
@@ -74,50 +80,11 @@
   font-weight: 600;
 }
 
-.resumen {
-  margin-top: 1rem;
-  text-align: right;
+/* Estilo específico para el botón de PDF (rojo) */
+.reserva-header .btn-pdf {
+    background-color: #dc3545; /* Rojo de Bootstrap o similar */
 }
 
-.resumen p {
-  margin: 0.25rem 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #333;
-}
-.botones-accion-wide {
-  display: flex;
-  align-items: center;
-  margin-top: 15px;
-}
-
-.derecha {
-  margin-left: auto;
-}
-
-.eliminar-btn {
-  background-color: #e74c3c  !important;
-  color: white  !important;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-}
-
-.eliminar-btn:hover {
-  background-color: #c0392b  !important;
-}
-
-.facturar-btn {
-  background-color: #28a745 !important;
-  color: white !important;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-.facturar-btn:hover {
-  background-color: #218838 !important;
+.reserva-header .btn-pdf:hover {
+    background-color: #c82333; /* Rojo más oscuro al pasar el mouse */
 }

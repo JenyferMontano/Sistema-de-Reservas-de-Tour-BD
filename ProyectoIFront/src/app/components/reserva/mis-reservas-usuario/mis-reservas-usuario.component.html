@@ -1,0 +1,59 @@
+<div class="scroll-container">
+  <div class="contenedor-transparente">
+    <h2 class="text-center mb-4 titulo-reserva">Mis Reservas</h2>
+
+    <button (click)="buscarReservas()" class="boton-cafe">Ver Mis Reservas</button>
+
+    <div *ngIf="buscando">Buscando reservas...</div>
+
+    <div *ngIf="!buscando && reservas.length === 0">
+      <p>No tienes reservas registradas.</p>
+    </div>
+
+    <div *ngFor="let reserva of reservas" class="reserva-card">
+      <div class="reserva-header">
+        <h3>Reserva #{{ reserva.numreserva }}</h3>
+        <p><strong>Estado:</strong> {{ reserva.estadoreserva }}</p>
+        <p><strong>Fecha:</strong> {{ reserva.fechareserva | date: 'short' }}</p>
+        <div class="botones-accion-wide">
+          <button (click)="reserva.mostrarDetalles = !reserva.mostrarDetalles">
+            {{ reserva.mostrarDetalles ? "Ocultar Detalles" : "Ver Detalles" }}
+          </button>
+        </div>
+
+        <div *ngIf="reserva.mostrarDetalles" class="detalles-section">
+          <table class="detalles-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Tour</th>
+                <th>Personas</th>
+                <th>Precio</th>
+                <th>Descuento</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detalle of detallesPorReserva[reserva.numreserva]">
+                <td>{{ detalle.fecha }}</td>
+                <td>{{ detalle.hora }}</td>
+                <td>{{ detalle.nombretour }}</td>
+                <td>{{ detalle.cantpersonas }}</td>
+                <td>{{ detalle.precio | currency : "USD" }}</td>
+                <td>{{ detalle.descuento | currency : "USD" }}</td>
+                <td>{{ detalle.subtotal | currency : "USD" }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="resumen">
+            <p><strong>Subtotal:</strong> {{ reserva.subtotal | currency : "USD" }}</p>
+            <p><strong>Impuesto:</strong> {{ reserva.impuesto | currency : "USD" }}</p>
+            <p><strong>Total:</strong> {{ reserva.total | currency : "USD" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

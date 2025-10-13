@@ -18,6 +18,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *sql.DB, tokenBuilder security.Build
 	rg.GET("/", h.GetAllReservas)
 	rg.GET("/:id", h.GetReservaById)
 	rg.GET("/huesped/:id", middleware.AuthMiddleware(tokenBuilder), h.GetReservasByHuesped)
+	rg.GET("/usuario/:usuario", h.GetReservasByUsuario)
 	rg.DELETE("/:id", h.DeleteReserva)
 	rg.PUT("/estado", h.UpdateEstadoReserva)
 

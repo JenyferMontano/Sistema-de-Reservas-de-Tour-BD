@@ -38,11 +38,19 @@ export class FacturaService {
     });
   }
 
+  /*
   getFacturasByUsuario(usuario: string, token: string): Observable<FacturaList[]> {
     return this.http.get<FacturaList[]>(`${this.url}factura/usuario/${usuario}`, {
       headers: this.getAuthHeaders(token)
     });
+  }*/
+
+  getFacturasByPersona(idPersona: number, token: string): Observable<FacturaList[]> {
+    return this.http.get<FacturaList[]>(`${this.url}factura/persona/${idPersona}`, {
+      headers: this.getAuthHeaders(token)
+    });
   }
+
 
   getFacturaByReserva(reservaId: number, token: string): Observable<FacturaBase> {
     return this.http.get<FacturaBase>(`${this.url}factura/reserva/${reservaId}`, {
@@ -61,4 +69,17 @@ export class FacturaService {
       headers: this.getAuthHeaders(token)
     });
   }
+
+  getFacturaPDF(facturaId: number, token: string): Observable<Blob> {
+    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
+    // La opción { responseType: 'blob' } es crucial.
+    // Le dice a Angular que la respuesta es un archivo y no un JSON.
+    return this.http.get(`${this.url}factura/${facturaId}/pdf`, { 
+      headers: headers,
+      responseType: 'blob' 
+    });
+  }
+
+
+
 }
