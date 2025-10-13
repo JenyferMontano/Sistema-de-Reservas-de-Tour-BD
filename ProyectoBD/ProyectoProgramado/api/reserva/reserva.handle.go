@@ -156,6 +156,23 @@ func (h *Handler) GetReservasByHuesped(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, reservas)
 }
 
+func (h *Handler) GetReservasByUsuario(ctx *gin.Context) {
+	usuario := ctx.Param("usuario")
+	if usuario == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Usuario no proporcionado"})
+		return
+	}
+
+	reservas, err := dto.GetReservasByUsuario(h.db, usuario)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al consultar reservas"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, reservas)
+}
+
+
 func (h *Handler) DeleteReserva(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)

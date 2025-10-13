@@ -48,21 +48,6 @@ func CreateReserva(db *sql.DB, r CreateReservaParams) (int32, error) {
 	return id, nil
 }
 
-/*
-func DeleteReserva(db *sql.DB, id int32) error {
-	_, err := db.Exec("DELETE FROM reserva WHERE numReserva = @p1", id)
-	return err
-}*/
-/* FUNCIONA
-func DeleteReserva(db *sql.DB, id int32) error {
-	_, err := db.Exec("EXEC pa_reserva_delete @numReserva = @p1", id)
-	if err != nil {
-		// Captura errores del procedimiento (como dependencias)/PARTE DEL TRIGGER
-		return fmt.Errorf("no se pudo eliminar la reserva: %w", err)
-	}
-	return nil
-}*/
-
 func DeleteReserva(db *sql.DB, id int32) error {
 	_, err := db.Exec(
 		"EXEC pa_reserva_delete @numReserva=@id",
@@ -74,25 +59,6 @@ func DeleteReserva(db *sql.DB, id int32) error {
 	return nil
 }
 
-/*
-func GetAllReservas(db *sql.DB) ([]Reserva, error) {
-	rows, err := db.Query("SELECT numReserva, usuario, huesped, estadoReserva, fechaReserva, subTotal, impuesto, total FROM reserva")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var reservas []Reserva
-	for rows.Next() {
-		var r Reserva
-		err := rows.Scan(&r.Numreserva, &r.Usuario, &r.Huesped, &r.Estadoreserva, &r.Fechareserva, &r.Subtotal, &r.Impuesto, &r.Total)
-		if err != nil {
-			return nil, err
-		}
-		reservas = append(reservas, r)
-	}
-	return reservas, nil
-}*/
-
 type GetAllReservasRow struct {
 	Numreserva    int32     `json:"numreserva"`
 	Estadoreserva string    `json:"estadoreserva"`
@@ -101,6 +67,7 @@ type GetAllReservasRow struct {
 	Impuesto      float64   `json:"impuesto"`
 	Total         float64   `json:"total"`
 	Nombreusuario string    `json:"nombreusuario"`
+	IdPersona     int32     `json:"idpersona"`
 	Nombrecliente string    `json:"nombrecliente"`
 	Apellido1     string    `json:"apellido_1"`
 	Apellido2     string    `json:"apellido_2"`
@@ -124,6 +91,7 @@ func GetAllReservas(db *sql.DB) ([]GetAllReservasRow, error) {
 			&r.Impuesto,
 			&r.Total,
 			&r.Nombreusuario,
+			&r.IdPersona,
 			&r.Nombrecliente,
 			&r.Apellido1,
 			&r.Apellido2,
@@ -136,18 +104,6 @@ func GetAllReservas(db *sql.DB) ([]GetAllReservasRow, error) {
 
 	return reservas, nil
 }
-
-/*
-func GetReservaById(db *sql.DB, id int32) (*Reserva, error) {
-	row := db.QueryRow("SELECT TOP 1 numReserva, usuario, huesped, estadoReserva, fechaReserva, subTotal, impuesto, total FROM reserva WHERE numReserva = @p1", id)
-	var r Reserva
-	err := row.Scan(&r.Numreserva, &r.Usuario, &r.Huesped, &r.Estadoreserva, &r.Fechareserva, &r.Subtotal, &r.Impuesto, &r.Total)
-	if err != nil {
-		return nil, err
-	}
-	return &r, nil
-}
-*/
 
 type GetReservaByIdRow struct {
 	Numreserva    int32     `json:"numreserva"`
@@ -193,6 +149,7 @@ type GetReservasByUsuarioRow struct {
 	Subtotal      float64   `json:"subtotal"`
 	Impuesto      float64   `json:"impuesto"`
 	Total         float64   `json:"total"`
+	Usuario       string    `json:"usuario"`
 }
 
 func GetReservasByUsuario(db *sql.DB, usuario string) ([]GetReservasByUsuarioRow, error) {
@@ -215,6 +172,7 @@ func GetReservasByUsuario(db *sql.DB, usuario string) ([]GetReservasByUsuarioRow
 			&r.Subtotal,
 			&r.Impuesto,
 			&r.Total,
+			&r.Usuario,
 		)
 		if err != nil {
 			return nil, err

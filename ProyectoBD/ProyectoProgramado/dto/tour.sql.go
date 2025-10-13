@@ -6,7 +6,6 @@ import (
 
 // Funciones CRUD para Tour usando SQL Server
 
-
 func CreateTour(db *sql.DB, t Tour) error {
 	_, err := db.Exec(
 		`EXEC pa_tour_insert 
@@ -26,27 +25,6 @@ func DeleteTour(db *sql.DB, id int32) error {
 	_, err := db.Exec("EXEC pa_tour_delete @idTour=@p1", id)
 	return err
 }
-
-/*
-func GetAllTours(db *sql.DB) ([]Tour, error) {
-	rows, err := db.Query("SELECT idTour, nombre, descripcion, tipo, disponibilidad, precioBase, ubicacion, imageTour FROM Tour")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var tours []Tour
-	for rows.Next() {
-		var t Tour
-		err := rows.Scan(&t.Idtour, &t.Nombre, &t.Descripcion, &t.Tipo, &t.Disponibilidad, &t.Preciobase, &t.Ubicacion, &t.Imagetour)
-		if err != nil {
-			return nil, err
-		}
-		tours = append(tours, t)
-	}
-	return tours, nil
-}
-
-*/
 
 func GetAllTours(db *sql.DB) ([]Tour, error) {
 	rows, err := db.Query("EXEC pa_tour_getAll")
@@ -68,18 +46,6 @@ func GetAllTours(db *sql.DB) ([]Tour, error) {
 	return tours, nil
 }
 
-
-/*
-func GetTourById(db *sql.DB, id int32) (*Tour, error) {
-	row := db.QueryRow("SELECT TOP 1 idTour, nombre, descripcion, tipo, disponibilidad, precioBase, ubicacion, imageTour FROM Tour WHERE idTour = @p1", id)
-	var t Tour
-	err := row.Scan(&t.Idtour, &t.Nombre, &t.Descripcion, &t.Tipo, &t.Disponibilidad, &t.Preciobase, &t.Ubicacion, &t.Imagetour)
-	if err != nil {
-		return nil, err
-	}
-	return &t, nil
-}  */
-
 func GetTourById(db *sql.DB, id int32) (*Tour, error) {
 	row := db.QueryRow(
 		"EXEC pa_tour_getById @idTour=@p1",
@@ -93,15 +59,6 @@ func GetTourById(db *sql.DB, id int32) (*Tour, error) {
 	return &t, nil
 }
 
-
-/*
-	func GetTourByPrecioBase(db *sql.DB, id int32) (float64, error) {
-		row := db.QueryRow("SELECT precioBase FROM Tour WHERE idTour = @p1", id)
-		var preciobase float64
-		err := row.Scan(&preciobase)
-		return preciobase, err
-	}
-*/
 func GetTourByPrecioBase(db *sql.DB, id int32) (float64, error) {
 	row := db.QueryRow(
 		"EXEC pa_tour_getPrecioBase @idTour=@p1",
@@ -115,25 +72,6 @@ func GetTourByPrecioBase(db *sql.DB, id int32) (float64, error) {
 	return preciobase, nil
 }
 
-/*
-	func GetToursByTipo(db *sql.DB, tipo string) ([]Tour, error) {
-		rows, err := db.Query("SELECT idTour, nombre, descripcion, tipo, disponibilidad, precioBase, ubicacion, imageTour FROM Tour WHERE tipo = @p1", tipo)
-		if err != nil {
-			return nil, err
-		}
-		defer rows.Close()
-		var tours []Tour
-		for rows.Next() {
-			var t Tour
-			err := rows.Scan(&t.Idtour, &t.Nombre, &t.Descripcion, &t.Tipo, &t.Disponibilidad, &t.Preciobase, &t.Ubicacion, &t.Imagetour)
-			if err != nil {
-				return nil, err
-			}
-			tours = append(tours, t)
-		}
-		return tours, nil
-	}
-*/
 func GetToursByTipo(db *sql.DB, tipo string) ([]Tour, error) {
 	rows, err := db.Query(
 		"EXEC pa_tour_getByTipo @tipo=@p1",

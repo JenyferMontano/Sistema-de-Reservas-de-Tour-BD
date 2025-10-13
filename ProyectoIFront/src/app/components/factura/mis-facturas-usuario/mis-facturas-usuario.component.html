@@ -1,0 +1,46 @@
+<div class="scroll-container">
+    <div *ngFor="let factura of facturas" class="reserva-card">
+        <div class="reserva-header">
+            <h3>Factura #{{ factura.idFactura }}</h3>
+            <p><strong>Fecha:</strong> {{ factura.fechaFactura | date : "dd/MM/yyyy" }}</p>
+            
+            <p><strong>Estado:</strong> {{ factura.estadoFactura }}</p>
+            <p><strong>Método de Pago:</strong> {{ factura.metodoPago }}</p>
+            <p><strong>Total:</strong> {{ factura.total | currency : "USD" }}</p>
+
+            <div class="botones-accion-wide">
+                <button (click)="toggleDetalles(factura)">
+                    {{ factura.mostrarDetalles ? "Ocultar Detalles" : "Ver Detalles" }}
+                </button>
+                <button class="btn-pdf" (click)="descargarPDF(factura.idFactura, $event)">
+                    Descargar PDF
+                </button>
+            </div>
+
+            <div *ngIf="factura.mostrarDetalles" class="detalles-section">
+                <table class="detalles-table">
+                    <thead>
+                        <tr>
+                            <th>Tour</th>
+                            <th>Ubicación</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Descuento</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let detalle of detallesPorFactura[factura.idFactura]">
+                            <td>{{ detalle.nombreTour }}</td>
+                            <td>{{ detalle.ubicacion }}</td>
+                            <td>{{ detalle.cantTour }}</td>
+                            <td>{{ detalle.precioTour | currency : "USD" }}</td>
+                            <td>{{ detalle.descuento | currency : "USD" }}</td>
+                            <td>{{ detalle.subTotal | currency : "USD" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

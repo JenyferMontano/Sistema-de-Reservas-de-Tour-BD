@@ -8,6 +8,8 @@ import { Reserva } from '../../../models/reserva';
 import { DetalleReservaFactura } from '../../../models/reserva';
 import { Tour } from '../../../models/tour';
 import Swal from 'sweetalert2';
+import { FacturaService } from '../../../services/factura.service';
+import { FacturaCreateRequest } from '../../../models/factura';
 
 @Component({
   selector: 'app-listar-reserva',
@@ -24,7 +26,8 @@ export class ListarReservaComponent implements OnInit {
   constructor(
     private reservaService: ReservaService,
     private detalleService: DetalleReservaService,
-    private tourService: TourService
+    private tourService: TourService,
+     private facturaService: FacturaService
   ) { }
 
   ngOnInit(): void {
@@ -105,4 +108,47 @@ export class ListarReservaComponent implements OnInit {
     });
   }
 
+  crearFactura(reserva: Reserva): void {
+    const token = sessionStorage.getItem('token') || '';
+
+    Swal.fire({
+      title: '¿Crear factura?',
+      text: `¿Deseas generar una factura para la reserva #${reserva.numreserva}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, facturar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#6c757d'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const facturaRequest: FacturaCreateRequest = {
+          persona: reserva.idpersona,
+          reserva: reserva.numreserva,
+          estadoFactura: 'Facturada',
+          metodoPago: 'Efectivo',
+          iva: 13, // Asumiendo un IVA fijo del 13%
+          subtotal: reserva.subtotal
+        };
+
+        this.facturaService.createFactura(facturaRequest, token).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Factura creada',
+              text: `La factura de la reserva #${reserva.numreserva} fue generada correctamente.`
+            });
+          },
+          error: (err) => {
+            console.error('Error creando factura', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo crear la factura. Verifique los datos o contacte soporte.'
+            });
+          }
+        });
+      }
+    });
+  }
 }

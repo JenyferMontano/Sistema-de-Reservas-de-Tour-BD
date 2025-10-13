@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FacturaService } from '../../services/factura.service';
-import { FacturaDetalle } from '../../models/facturaDetalle';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../services/usuario.service';
 
@@ -13,7 +12,7 @@ import { UsuarioService } from '../../services/usuario.service';
   providers: [FacturaService]
 })
 export class FacturaComponent {
-
+/*
   public facturas: FacturaDetalle[] = [];
   public facturasFiltradas: FacturaDetalle[] = [];
   public filtro: string = '';
@@ -102,5 +101,5 @@ export class FacturaComponent {
         this.errorMsg = 'Error al eliminar factura.';
       }
     });
-  }
+  }*/
 }

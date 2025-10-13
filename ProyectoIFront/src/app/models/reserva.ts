@@ -8,6 +8,7 @@ export class Reserva {
     public impuesto: number,
     public total: number,
     public nombreusuario: string,
+    public idpersona: number,
     public nombrecliente: string,
     public apellido_1: string,
     public apellido_2: string,
@@ -24,3 +25,5 @@ export interface DetalleReservaFactura {
   descuento: number;
   subtotal: number;
 }
+
+
