@@ -107,6 +107,12 @@ export class MisFacturasUsuarioComponent {
     }
   }
 
+    formatFecha(fecha: string): string {
+    const d = new Date(fecha);
+    const adjusted = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+    return adjusted.toISOString().substring(0, 10); // yyyy-MM-dd
+  }
+
   descargarPDF(facturaId: number, event: MouseEvent): void {
     event.stopPropagation(); // Evita que se abra/cierre el acordeón de detalles
     const token = sessionStorage.getItem('token') || '';

@@ -68,6 +68,19 @@ export class ListarReservaComponent implements OnInit {
     });
   }
 
+    formatFechaHora(fecha: string): string {
+    const d = new Date(fecha);
+    return d.toLocaleString('es-CR', {
+      timeZone: 'America/Costa_Rica', // ajusta según tu zona
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+
   eliminarReserva(reservaId: number): void {
     const token = sessionStorage.getItem('token') || '';
 

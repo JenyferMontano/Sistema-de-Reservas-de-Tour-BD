@@ -3,7 +3,7 @@
         <!-- Encabezado de la reserva -->
         <div class="reserva-header">
             <h3>Reserva #{{ reserva.numreserva }}</h3>
-            <p><strong>Fecha:</strong> {{ reserva.fechareserva | date:'short' }}</p>
+            <p><strong>Fecha:</strong> {{ formatFechaHora(reserva.fechareserva) }}</p>
             <p><strong>Usuario:</strong> {{ reserva.nombreusuario }}</p>
             <p><strong>Huésped:</strong> {{ reserva.nombrecliente }} {{ reserva.apellido_1 }} {{ reserva.apellido_2 }}
             </p>
@@ -43,7 +43,7 @@
                             <td>{{ detalle.nombretour }}</td>
                             <td>{{ detalle.cantpersonas }}</td>
                             <td>{{ detalle.precio | currency:'USD' }}</td>
-                            <td>{{ detalle.descuento | currency:'USD' }}</td>
+                            <td>{{ detalle.descuento }}%</td>
                             <td>{{ detalle.subtotal | currency:'USD' }}</td>
                         </tr>
                     </tbody>

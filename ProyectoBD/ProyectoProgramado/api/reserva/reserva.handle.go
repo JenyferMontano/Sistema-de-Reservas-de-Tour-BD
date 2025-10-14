@@ -71,7 +71,7 @@ func (h *Handler) CreateReservaConDetalles(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "El descuento no puede ser mayor al precio total"})
 			return
 		}
-		subTotalDetalle := precioTotal - d.Descuento
+		subTotalDetalle := precioTotal * (1 - d.Descuento/100)
 		subTotal += subTotalDetalle
 		detallesFinales = append(detallesFinales, dto.Detallereserva{
 			Fecha:        d.Fecha,
