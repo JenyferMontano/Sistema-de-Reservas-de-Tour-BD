@@ -27,8 +27,6 @@ export class ReservaService {
     return this._http.get<Reserva[]>(this.url + 'reserva/huesped/' + id, { headers });
   }
 
-
-
 getReservasByUsuario(usuario: string, token: string): Observable<Reserva[]> {
   const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
   return this._http.get<Reserva[]>(this.url + 'reserva/usuario/' + usuario, { headers });

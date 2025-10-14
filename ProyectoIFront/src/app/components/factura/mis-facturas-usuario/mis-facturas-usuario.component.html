@@ -2,7 +2,7 @@
     <div *ngFor="let factura of facturas" class="reserva-card">
         <div class="reserva-header">
             <h3>Factura #{{ factura.idFactura }}</h3>
-            <p><strong>Fecha:</strong> {{ factura.fechaFactura | date : "dd/MM/yyyy" }}</p>
+            <p><strong>Fecha:</strong> {{ formatFecha(factura.fechaFactura) | date : "dd/MM/yyyy" }}</p>
             
             <p><strong>Estado:</strong> {{ factura.estadoFactura }}</p>
             <p><strong>Método de Pago:</strong> {{ factura.metodoPago }}</p>
@@ -35,7 +35,7 @@
                             <td>{{ detalle.ubicacion }}</td>
                             <td>{{ detalle.cantTour }}</td>
                             <td>{{ detalle.precioTour | currency : "USD" }}</td>
-                            <td>{{ detalle.descuento | currency : "USD" }}</td>
+                            <td>{{ detalle.descuento }}%</td>
                             <td>{{ detalle.subTotal | currency : "USD" }}</td>
                         </tr>
                     </tbody>

@@ -2,11 +2,9 @@
   <div class="contenedor-transparente">
     <h2 class="text-center mb-4 titulo-reserva">Mis Reservas</h2>
 
-    <button (click)="buscarReservas()" class="boton-cafe">Ver Mis Reservas</button>
+    <div *ngIf="cargando">Buscando reservas...</div>
 
-    <div *ngIf="buscando">Buscando reservas...</div>
-
-    <div *ngIf="!buscando && reservas.length === 0">
+    <div *ngIf="!cargando && reservas.length === 0">
       <p>No tienes reservas registradas.</p>
     </div>
 
@@ -14,11 +12,11 @@
       <div class="reserva-header">
         <h3>Reserva #{{ reserva.numreserva }}</h3>
         <p><strong>Estado:</strong> {{ reserva.estadoreserva }}</p>
-        <p><strong>Fecha:</strong> {{ reserva.fechareserva | date: 'short' }}</p>
+        <p><strong>Fecha:</strong> {{ formatFechaHora(reserva.fechareserva)}}</p>
         <div class="botones-accion-wide">
-          <button (click)="reserva.mostrarDetalles = !reserva.mostrarDetalles">
-            {{ reserva.mostrarDetalles ? "Ocultar Detalles" : "Ver Detalles" }}
-          </button>
+         <button (click)="toggleDetalles(reserva)">
+  {{ reserva.mostrarDetalles ? "Ocultar Detalles" : "Ver Detalles" }}
+</button>
         </div>
 
         <div *ngIf="reserva.mostrarDetalles" class="detalles-section">
@@ -41,7 +39,7 @@
                 <td>{{ detalle.nombretour }}</td>
                 <td>{{ detalle.cantpersonas }}</td>
                 <td>{{ detalle.precio | currency : "USD" }}</td>
-                <td>{{ detalle.descuento | currency : "USD" }}</td>
+                <td>{{ detalle.descuento }}%</td>
                 <td>{{ detalle.subtotal | currency : "USD" }}</td>
               </tr>
             </tbody>
