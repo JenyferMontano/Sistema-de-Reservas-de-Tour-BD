@@ -8,6 +8,7 @@ import { TourService } from '../../../services/tour.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../../services/usuario.service';
+import { FacturaService } from '../../../services/factura.service';
 
 @Component({
   selector: 'app-mis-reservas-',

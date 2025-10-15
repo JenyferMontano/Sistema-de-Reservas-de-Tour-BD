@@ -79,6 +79,28 @@ func (h *Handler) CreateFacturaHandler(ctx *gin.Context) {
 		return
 	}
 
+	// Construir el objeto de la factura que el frontend necesita (sin tener que llamar a GetFacturaById)
+// NOTA: Usamos idfactura en minúsculas para asegurar la compatibilidad con el modelo de Angular.
+facturaRespuesta := gin.H{
+    "idfactura":    idFactura, // Clave para Angular: response.factura.idfactura
+    "persona":      req.Persona,
+    "reserva":      req.Reserva,
+    "estadofactura": "Facturada", // Usamos el estado final
+    "metodopago":   req.MetodoPago,
+    "iva":          req.Iva,
+    "subtotal":     req.Subtotal,
+    // NOTA: El total calculado por el PA NO está aquí, ya que no se devuelve en CreateFactura.
+    // Si necesitas el Total, DEBES llamar a GetFacturaById (o modificar el PA para devolverlo).
+    "fechafactura": now, 
+}
+
+// 5. DEVOLVER LA ESTRUCTURA FINAL
+ctx.JSON(http.StatusOK, gin.H{
+    "mensaje":      "Factura creada y detalles migrados correctamente",
+    "factura":      facturaRespuesta, // El objeto anidado que Angular espera
+    "detalles":     detalles,         // Los detalles al mismo nivel de la respuesta
+})
+/*
 	ctx.JSON(http.StatusOK, gin.H{
 		"mensaje":      "Factura creada y detalles migrados correctamente",
 		"idFactura":    idFactura,
@@ -88,7 +110,7 @@ func (h *Handler) CreateFacturaHandler(ctx *gin.Context) {
 		"estado":       "Facturada",
 		"metodoPago":   req.MetodoPago,
 		"fechaFactura": now,
-	})
+	})*/
 }
 
 // Obtener todas las facturas

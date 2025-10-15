@@ -8,7 +8,7 @@ import { Reserva } from '../../../models/reserva';
 import { DetalleReservaFactura } from '../../../models/reserva';
 import { Tour } from '../../../models/tour';
 import Swal from 'sweetalert2';
-import { FacturaService } from '../../../services/factura.service';
+import { CreateFacturaResponse, FacturaService } from '../../../services/factura.service';
 import { FacturaCreateRequest } from '../../../models/factura';
 
 @Component({
@@ -131,6 +131,59 @@ export class ListarReservaComponent implements OnInit {
       showCancelButton: true,
       confirmButtonText: 'Sí, facturar',
       cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        
+        Swal.fire({
+          title: 'Procesando...',
+          text: 'Creando la factura, por favor espera.',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        const facturaRequest: FacturaCreateRequest = {
+          persona: reserva.idpersona,
+          reserva: reserva.numreserva,
+          estadoFactura: 'Pagada',
+          metodoPago: 'Efectivo',
+          iva: 13, // Asumiendo un IVA fijo del 13%
+          subtotal: reserva.subtotal
+        };
+
+        this.facturaService.createFactura(facturaRequest, token).subscribe({
+          next: (response: CreateFacturaResponse) => {
+            Swal.fire({
+              icon: 'success',
+              title: '¡Factura Creada!',
+              text: `La factura #${response.factura.idfactura} fue generada. Preparando descarga...`
+            });
+
+            // Llama a la función para descargar el PDF
+            this.descargarFacturaPDF(response.factura.idfactura, token);
+
+            // Actualiza la UI para que la reserva facturada desaparezca de la lista
+            this.reservas = this.reservas.filter(r => r.numreserva !== reserva.numreserva);
+          },
+          error: (err) => {
+            console.error('Error creando factura', err);
+            Swal.fire('Error', 'No se pudo crear la factura.', 'error');
+          }
+        });
+      }
+    });
+  }
+
+/*
+  crearFactura(reserva: Reserva): void {
+    const token = sessionStorage.getItem('token') || '';
+
+    Swal.fire({
+      title: '¿Crear factura?',
+      text: `¿Deseas generar una factura para la reserva #${reserva.numreserva}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, facturar',
+      cancelButtonText: 'Cancelar',
       confirmButtonColor: '#28a745',
       cancelButtonColor: '#6c757d'
     }).then((result) => {
@@ -161,6 +214,25 @@ export class ListarReservaComponent implements OnInit {
             });
           }
         });
+      }
+    });
+  } */
+
+  private descargarFacturaPDF(facturaId: number, token: string): void {
+    this.facturaService.getFacturaPDF(facturaId, token).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `factura-${facturaId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      },
+      error: (err) => {
+        console.error('Error descargando PDF', err);
+        Swal.fire('Error', 'No se pudo descargar el PDF.', 'error');
       }
     });
   }

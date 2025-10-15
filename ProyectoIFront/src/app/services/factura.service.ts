@@ -4,6 +4,12 @@ import { Observable } from 'rxjs';
 import { server } from './global';
 import { FacturaBase, FacturaCreateRequest, FacturaListALL, FacturaList, FacturaUpdateEstado } from '../models/factura';
 
+
+export interface CreateFacturaResponse {
+  mensaje: string;
+  factura: FacturaBase; // La factura completa que devuelve tu backend
+} 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,11 +25,20 @@ export class FacturaService {
       .set('Authorization', 'Bearer ' + token)
       .set('Content-Type', 'application/json');
   }
-
+/*
   createFactura(factura: FacturaCreateRequest, token: string): Observable<any> {
     return this.http.post(`${this.url}factura/`, factura, {
       headers: this.getAuthHeaders(token)
     });
+  }*/
+
+      createFactura(data: any, token: string): Observable<CreateFacturaResponse> {
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'application/json');
+
+    // Asumimos que tu endpoint de creación está en 'factura/crear'
+    return this.http.post<CreateFacturaResponse>(`${this.url}factura/`, data, { headers });
   }
 
   getAllFacturas(token: string): Observable<FacturaListALL[]> {
