@@ -180,3 +180,8 @@ ORDER BY fechaOperacion DESC;
 
 PRINT 'Prueba del trigger completada exitosamente'
 GO
+
+--RESLTADO:
+Msg 547, Level 16, State 0, Procedure tr_auditoria_usuarios, Line 92 [Batch Start Line 165]
+Instrucción INSERT en conflicto con la restricción FOREIGN KEY 'FK_auditoria_operaciones_usuario'. El conflicto ha aparecido en la base de datos 'reservas_tour', tabla 'dbo.usuario', column 'userName'.
+Se terminó la instrucción.
