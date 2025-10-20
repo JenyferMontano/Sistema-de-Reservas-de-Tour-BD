@@ -4,11 +4,13 @@ import (
 	detallefactura "ProyectoProgramadoI/api/detalleFactura"
 	detallereserva "ProyectoProgramadoI/api/detalleReserva"
 	"ProyectoProgramadoI/api/factura"
+	"ProyectoProgramadoI/api/middleware"
 	"ProyectoProgramadoI/api/persona"
 	"ProyectoProgramadoI/api/reserva"
 	"ProyectoProgramadoI/api/tour"
 	"ProyectoProgramadoI/api/usuario"
 	"ProyectoProgramadoI/security"
+	"ProyectoProgramadoI/services"
 	"database/sql"
 	"time"
 
@@ -20,6 +22,8 @@ type Server struct {
 	tokenBuilder  security.Builder
 	tokenDuration time.Duration
 	router        *gin.Engine
+	auditService  *services.AuditService
+	sessionService *services.SessionService
 }
 
 func NewServer(db *sql.DB, tokenDuration time.Duration) (*Server, error) {
@@ -27,10 +31,17 @@ func NewServer(db *sql.DB, tokenDuration time.Duration) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	// Crear servicios de auditoría
+	auditService := services.NewAuditService(db)
+	sessionService := services.NewSessionService(db)
+	
 	server := &Server{
 		db:            db,
 		tokenBuilder:  tokenBuilder,
 		tokenDuration: tokenDuration,
+		auditService:  auditService,
+		sessionService: sessionService,
 	}
 	router := gin.Default()
 	// Middleware CORS
@@ -43,12 +54,20 @@ func NewServer(db *sql.DB, tokenDuration time.Duration) (*Server, error) {
 		Credentials:     false,
 		ValidateHeaders: false,
 	}))
+	
+	// Middleware de auditoría global
+	router.Use(middleware.AuditMiddleware(auditService))
+	router.Use(middleware.SessionValidationMiddleware(sessionService))
+	
 	usuarioHandler := usuario.NewHandler(db, tokenBuilder, tokenDuration)
 
 	//RUTAS {ENDPOINTS} DEL API
 	api := router.Group("/api/v1")
 	api.GET("/tour/img/:name", tour.GetTourImgHandler(db))
-	api.POST("/login", usuarioHandler.Login)
+	
+	// Rutas con middleware específico de auditoría
+	api.POST("/login", middleware.LoginAuditMiddleware(auditService, sessionService), usuarioHandler.Login)
+	api.POST("/logout", middleware.LogoutAuditMiddleware(auditService, sessionService), usuarioHandler.Logout)
 	persona.RegisterRoutes(api.Group("/persona"), db, tokenBuilder)
 	tour.RegisterRoutes(api.Group("/tour"), db, tokenBuilder)
 	usuario.RegisterRoutes(api.Group("/usuario"), db, tokenBuilder, tokenDuration)

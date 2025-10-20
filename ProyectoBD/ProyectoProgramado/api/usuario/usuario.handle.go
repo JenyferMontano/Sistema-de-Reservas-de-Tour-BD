@@ -344,7 +344,17 @@ func (h *Handler) Login(ctx *gin.Context) {
 			Image:    image,
 		},
 	}
+	// Agregar información del usuario al contexto para el middleware de auditoría
+	ctx.Set("login_user", user.Username)
 	ctx.JSON(http.StatusOK, resp)
+}
+
+// Logout de usuario
+func (h *Handler) Logout(ctx *gin.Context) {
+	// El middleware de auditoría se encargará de registrar el logout
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Sesión cerrada exitosamente",
+	})
 }
 
 func (h *Handler) uploadUsuarioImg(ctx *gin.Context) {
