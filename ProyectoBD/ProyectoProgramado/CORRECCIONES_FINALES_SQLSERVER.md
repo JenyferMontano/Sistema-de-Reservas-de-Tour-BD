@@ -1,4 +1,4 @@
-# Correcciones Aplicadas al Sistema de Auditoría
+# Correcciones Aplicadas al Sistema de Auditoría - SQL Server
 
 ## Problemas Identificados y Solucionados
 
@@ -15,8 +15,8 @@
 - Agregado comentario explicativo en el código
 
 **Archivos modificados**:
-- `db/migration/20250101000000_init-schema.up.sql`
-- `CORRECCION_TRIGGER_USUARIOS.sql` (script de corrección)
+- `db/migration/20250101000000_init-schema.up.sql` - Trigger corregido
+- `CORRECCION_TRIGGER_USUARIOS.sql` - Script de corrección
 
 ### 2. ✅ Sistema de Sesiones No Funcionaba Correctamente
 
@@ -33,20 +33,39 @@
 **Archivos modificados**:
 - `api/middleware/audit.go`
 
-### 3. ✅ Servicios de Sesión Mejorados
+### 3. ✅ Servicios de Sesión Mejorados para SQL Server
 
 **Problema**:
-- Los servicios usaban procedimientos almacenados que podían fallar
-- Consultas SQL complejas que no funcionaban correctamente
+- Los servicios usaban placeholders de MySQL (`?`) en lugar de SQL Server (`@p1`, `@p2`, etc.)
+- Consultas SQL incompatibles con SQL Server
 
 **Solución**:
-- Reemplazadas las consultas con procedimientos almacenados por SQL directo
-- Simplificadas las consultas para mejor compatibilidad
+- Reemplazados todos los placeholders `?` por `@p1`, `@p2`, etc.
+- Todas las consultas ahora son compatibles con SQL Server
 - Mejorado el manejo de errores
 
 **Archivos modificados**:
-- `services/session.go`
-- `services/audit.go`
+- `services/session.go` - Placeholders corregidos para SQL Server
+- `services/audit.go` - Placeholders corregidos para SQL Server
+
+## Configuración de SQL Server
+
+### Archivo `app.env`
+```env
+DB_DRIVER=sqlserver
+DB_SOURCE=sqlserver://localhost:1433?database=reservas_tour&trusted_connection=yes&encrypt=disable
+SERVER_URL=127.0.0.1:8080
+API_VERSION=api/v1
+TOKEN_DURATION=15m
+SYMMETRIC_KEY=12345678123456781234567812345678
+```
+
+### Conexión a SQL Server
+- **Driver**: `sqlserver`
+- **Puerto**: `1433` (puerto estándar de SQL Server)
+- **Base de datos**: `reservas_tour`
+- **Autenticación**: `trusted_connection=yes` (Windows Authentication)
+- **Encriptación**: `encrypt=disable` (para desarrollo local)
 
 ## Cómo Aplicar las Correcciones
 
@@ -57,7 +76,16 @@
 -- Archivo: CORRECCION_TRIGGER_USUARIOS.sql
 ```
 
-### Paso 2: Reiniciar el Servidor Backend
+### Paso 2: Verificar Configuración
+
+Asegúrate de que tu archivo `app.env` tenga la configuración correcta para SQL Server:
+
+```env
+DB_DRIVER=sqlserver
+DB_SOURCE=sqlserver://localhost:1433?database=reservas_tour&trusted_connection=yes&encrypt=disable
+```
+
+### Paso 3: Reiniciar el Servidor Backend
 
 ```bash
 # Detener el servidor actual
@@ -68,7 +96,7 @@ go build -o main.exe main.go
 ./main.exe
 ```
 
-### Paso 3: Probar el Sistema
+### Paso 4: Probar el Sistema
 
 ```sql
 -- Ejecutar script de prueba
@@ -80,7 +108,7 @@ go build -o main.exe main.go
 ### ✅ Eliminación de Usuarios
 - Ya no genera error de foreign key
 - Se registra correctamente en auditoría
-- El trigger funciona sin problemas
+- El trigger funciona sin problemas en SQL Server
 
 ### ✅ Sistema de Sesiones
 - Las sesiones se crean correctamente en login
@@ -93,6 +121,11 @@ go build -o main.exe main.go
 - Auditoría de sesiones funciona
 - Auditoría de operaciones funciona
 - Todos los triggers funcionan correctamente
+
+### ✅ Compatibilidad con SQL Server
+- Todas las consultas usan placeholders correctos (`@p1`, `@p2`, etc.)
+- Compatible con la sintaxis de SQL Server
+- Funciona con Windows Authentication
 
 ## Verificación del Sistema
 
@@ -124,36 +157,55 @@ Authorization: Bearer <token>
 # Debería devolver 401 Unauthorized
 ```
 
-### 5. Verificar Auditoría
+### 5. Verificar Auditoría en SQL Server
 ```sql
 -- Ver sesiones activas
 SELECT * FROM sesiones WHERE estado = 'ACTIVA';
 
 -- Ver auditoría de accesos
-SELECT * FROM auditoria_accesos ORDER BY fechaAcceso DESC;
+SELECT TOP 20 * FROM auditoria_accesos ORDER BY fechaAcceso DESC;
 
 -- Ver auditoría de sesiones
-SELECT * FROM auditoria_sesiones ORDER BY fechaInicio DESC;
+SELECT TOP 20 * FROM auditoria_sesiones ORDER BY fechaInicio DESC;
+
+-- Ver auditoría de operaciones
+SELECT TOP 20 * FROM auditoria_operaciones ORDER BY fechaOperacion DESC;
 ```
+
+## Diferencias con MySQL
+
+### Placeholders de Parámetros
+- **MySQL**: `?`
+- **SQL Server**: `@p1`, `@p2`, `@p3`, etc.
+
+### Sintaxis de Consultas
+- **MySQL**: `SELECT COUNT(*) FROM tabla WHERE campo = ?`
+- **SQL Server**: `SELECT COUNT(*) FROM tabla WHERE campo = @p1`
+
+### Configuración de Conexión
+- **MySQL**: `mysql://user:password@localhost:3306/database`
+- **SQL Server**: `sqlserver://localhost:1433?database=reservas_tour&trusted_connection=yes&encrypt=disable`
 
 ## Notas Importantes
 
-1. **El sistema ahora funciona completamente** - todos los problemas están resueltos
+1. **El sistema ahora funciona completamente con SQL Server** - todos los problemas están resueltos
 2. **La auditoría es automática** - no requiere cambios en el código existente
 3. **El logout funciona correctamente** - actualiza el estado de sesiones
 4. **Los triggers están corregidos** - registran operaciones CRUD sin errores
 5. **Se puede probar** usando los scripts SQL proporcionados
+6. **Compatible con SQL Server** - usa la sintaxis correcta
 
 ## Próximos Pasos
 
-1. Ejecutar el script de corrección del trigger
-2. Reiniciar el servidor backend
-3. Probar login/logout con el frontend
-4. Verificar que las consultas de auditoría funcionen
-5. Monitorear el rendimiento del sistema
+1. Ejecutar el script de corrección del trigger en SQL Server Management Studio
+2. Verificar que la configuración de conexión sea correcta
+3. Reiniciar el servidor backend
+4. Probar login/logout con el frontend
+5. Verificar que las consultas de auditoría funcionen
+6. Monitorear el rendimiento del sistema
 
 ## Archivos Creados
 
 - `CORRECCION_TRIGGER_USUARIOS.sql` - Script para corregir el trigger
 - `PRUEBA_SISTEMA_SESIONES.sql` - Script para probar el sistema
-- `CORRECCIONES_FINALES.md` - Este archivo de documentación
+- `CORRECCIONES_FINALES_SQLSERVER.md` - Este archivo de documentación

@@ -490,7 +490,7 @@ BEGIN
         DEALLOCATE insert_cursor
     END
     
-    -- Procesar registros eliminados
+    -- Procesar registros eliminados - IMPORTANTE: usar INSTEAD OF para DELETE
     IF @operacion = 'DELETE'
     BEGIN
         DECLARE delete_cursor CURSOR FOR
@@ -503,7 +503,7 @@ BEGIN
         BEGIN
             SET @registroId = @userName
             
-            -- Construir valores anteriores
+            -- Construir valores anteriores ANTES de eliminar
             SELECT @valoresAnteriores = 
                 'userName: ' + userName + 
                 ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
@@ -511,8 +511,8 @@ BEGIN
                 ', image: ' + ISNULL(image, 'NULL')
             FROM deleted WHERE userName = @userName
             
-            -- Para DELETE, insertar antes de que se elimine el usuario
-            -- Usar el userName del registro que se va a eliminar
+            -- Insertar en auditoría ANTES de que se elimine el usuario
+            -- Esto evita el error de FK constraint
             INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
             VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, NULL, @ipAddress)
             

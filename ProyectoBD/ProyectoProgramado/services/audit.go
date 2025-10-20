@@ -16,7 +16,7 @@ func NewAuditService(db *sql.DB) *AuditService {
 // Registrar acceso a endpoint
 func (s *AuditService) LogAccess(userName, endpoint, metodo, ipAddress, userAgent string, codigoRespuesta int32) error {
 	_, err := s.db.Exec(
-		"INSERT INTO auditoria_accesos (userName, endpoint, metodo, codigoRespuesta, ipAddress, userAgent) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO auditoria_accesos (userName, endpoint, metodo, codigoRespuesta, ipAddress, userAgent) VALUES (@p1, @p2, @p3, @p4, @p5, @p6)",
 		userName, endpoint, metodo, codigoRespuesta, ipAddress, userAgent,
 	)
 	return err
@@ -25,7 +25,7 @@ func (s *AuditService) LogAccess(userName, endpoint, metodo, ipAddress, userAgen
 // Registrar operación CRUD
 func (s *AuditService) LogOperation(userName, tablaAfectada, operacion, ipAddress string, registroID int32, valoresAnteriores, valoresNuevos string) error {
 	_, err := s.db.Exec(
-		"INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress) VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7)",
 		userName, tablaAfectada, operacion, registroID, valoresAnteriores, valoresNuevos, ipAddress,
 	)
 	return err
@@ -34,7 +34,7 @@ func (s *AuditService) LogOperation(userName, tablaAfectada, operacion, ipAddres
 // Registrar inicio de sesión
 func (s *AuditService) LogSessionStart(userName, ipAddress, userAgent string) error {
 	_, err := s.db.Exec(
-		"INSERT INTO auditoria_sesiones (userName, fechaInicio, ipAddress, userAgent, estado) VALUES (?, ?, ?, ?, ?)",
+		"INSERT INTO auditoria_sesiones (userName, fechaInicio, ipAddress, userAgent, estado) VALUES (@p1, @p2, @p3, @p4, @p5)",
 		userName, time.Now(), ipAddress, userAgent, "ACTIVA",
 	)
 	return err
@@ -43,7 +43,7 @@ func (s *AuditService) LogSessionStart(userName, ipAddress, userAgent string) er
 // Registrar fin de sesión
 func (s *AuditService) LogSessionEnd(userName string) error {
 	_, err := s.db.Exec(
-		"UPDATE auditoria_sesiones SET fechaFin = ?, estado = ? WHERE userName = ? AND estado = 'ACTIVA'",
+		"UPDATE auditoria_sesiones SET fechaFin = @p1, estado = @p2 WHERE userName = @p3 AND estado = 'ACTIVA'",
 		time.Now(), "CERRADA", userName,
 	)
 	return err
@@ -52,7 +52,7 @@ func (s *AuditService) LogSessionEnd(userName string) error {
 // Registrar fin de sesión específica por sessionID
 func (s *AuditService) LogSessionEndByID(sessionID string) error {
 	_, err := s.db.Exec(
-		"UPDATE auditoria_sesiones SET fechaFin = ?, estado = ? WHERE idAuditoria = (SELECT TOP 1 idAuditoria FROM auditoria_sesiones WHERE userName = (SELECT userName FROM sesiones WHERE sessionID = ?) AND estado = 'ACTIVA' ORDER BY fechaInicio DESC)",
+		"UPDATE auditoria_sesiones SET fechaFin = @p1, estado = @p2 WHERE userName = (SELECT userName FROM sesiones WHERE sessionID = @p3) AND estado = 'ACTIVA'",
 		time.Now(), "CERRADA", sessionID,
 	)
 	return err

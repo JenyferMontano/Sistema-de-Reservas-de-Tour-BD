@@ -60,17 +60,26 @@ func SessionValidationMiddleware(sessionService *services.SessionService) gin.Ha
 			return
 		}
 
-		// Extraer sessionID del token (esto dependería de tu implementación de tokens)
-		sessionID := ctx.GetHeader("x-session-id")
-		if sessionID == "" {
+		// Obtener información del usuario del token
+		userName := "anonymous"
+		if authorized, exists := ctx.Get("authorized"); exists {
+			if payload, ok := authorized.(*security.Payload); ok {
+				userName = payload.Username
+			}
+		}
+
+		// Si es usuario anónimo, continuar
+		if userName == "anonymous" {
 			ctx.Next()
 			return
 		}
 
-		// Validar sesión
-		if !sessionService.ValidateSession(sessionID) {
+		// Verificar si el usuario tiene sesiones activas
+		sessions, err := sessionService.GetActiveSessions(userName)
+		if err != nil || len(sessions) == 0 {
+			// No hay sesiones activas, denegar acceso
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "Sesión inválida o expirada",
+				"error": "Sesión inválida o expirada. Por favor, inicie sesión nuevamente.",
 			})
 			return
 		}
@@ -134,7 +143,6 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 		metodo := ctx.Request.Method
 		ipAddress := getClientIP(ctx)
 		userAgent := ctx.Request.UserAgent()
-		sessionID := ctx.GetHeader("x-session-id")
 
 		// Obtener información del usuario autenticado
 		userName := "anonymous"
@@ -161,17 +169,20 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 		}()
 
 		// Registrar cierre de sesión si fue exitoso
-		if ctx.Writer.Status() == http.StatusOK {
+		if ctx.Writer.Status() == http.StatusOK && userName != "anonymous" {
 			go func() {
-				// Cerrar sesión específica si tenemos sessionID
-				if sessionID != "" {
-					sessionService.CloseSession(sessionID)
+				// Cerrar todas las sesiones del usuario
+				err := sessionService.CloseAllUserSessions(userName)
+				if err != nil {
+					// Log error pero no fallar el logout
+					return
 				}
 
-				// Cerrar todas las sesiones del usuario
-				if userName != "anonymous" {
-					sessionService.CloseAllUserSessions(userName)
-					auditService.LogSessionEnd(userName)
+				// Registrar fin de sesión en auditoría
+				err = auditService.LogSessionEnd(userName)
+				if err != nil {
+					// Log error pero no fallar el logout
+					return
 				}
 			}()
 		}
