@@ -173,3 +173,11 @@ ORDER BY fechaAcceso DESC;
 -- DELETE FROM auditoria_sesiones WHERE userName = 'test_auditoria';
 -- DELETE FROM auditoria_operaciones WHERE userName = 'test_auditoria';
 -- DELETE FROM sesiones WHERE userName = 'test_auditoria';
+
+--RESULTADOS
+-- AL ELIMINAR USUARIO MIRA: Msg 547, Level 16, State 0, Procedure tr_auditoria_usuarios, Line 91 [Batch Start Line 66]
+--Instrucción INSERT en conflicto con la restricción FOREIGN KEY 'FK_auditoria_operaciones_usuario'. El conflicto ha aparecido en la base de datos 'reservas_tour', tabla 'dbo.usuario', column 'userName'.
+--Se terminó la instrucción.
+
+--CUANDO YA HICE UN LOGOUT NO DEBERIA DEJARME SEGUIR HACIENDO CONSULTAS, PORQUE YA CERRE LA SESION Y ME SIGUE DEJANDO HACER CONSULTAS.
+--Auditoria_sesiones no sirve, auditoria_accesos no sirve. en la tabla de sesiones si se registran y si sirve, la auditorioa de operaciones si sirve.
