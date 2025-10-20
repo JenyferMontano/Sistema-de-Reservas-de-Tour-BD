@@ -30,7 +30,7 @@ func (s *SessionService) CreateSession(userName, ipAddress, userAgent string) (s
 	sessionID := uuid.New().String()
 
 	_, err := s.db.Exec(
-		"EXEC pa_sesion_create @sessionID=@p1, @userName=@p2, @ipAddress=@p3, @userAgent=@p4, @estado=@p5",
+		"INSERT INTO sesiones (sessionID, userName, ipAddress, userAgent, estado) VALUES (@p1, @p2, @p3, @p4, @p5)",
 		sessionID, userName, ipAddress, userAgent, "ACTIVA",
 	)
 
@@ -44,7 +44,7 @@ func (s *SessionService) CreateSession(userName, ipAddress, userAgent string) (s
 // Validar sesión
 func (s *SessionService) ValidateSession(sessionID string) bool {
 	var count int32
-	err := s.db.QueryRow("EXEC pa_sesion_validate @sessionID=@p1", sessionID).Scan(&count)
+	err := s.db.QueryRow("SELECT COUNT(*) FROM sesiones WHERE sessionID = @p1 AND estado = 'ACTIVA'", sessionID).Scan(&count)
 	if err != nil {
 		return false
 	}
@@ -54,8 +54,8 @@ func (s *SessionService) ValidateSession(sessionID string) bool {
 // Cerrar sesión
 func (s *SessionService) CloseSession(sessionID string) error {
 	_, err := s.db.Exec(
-		"EXEC pa_sesion_close @sessionID=@p1, @fechaFin=@p2, @estado=@p3",
-		sessionID, time.Now(), "CERRADA",
+		"UPDATE sesiones SET fechaFin = @p1, estado = @p2 WHERE sessionID = @p3",
+		time.Now(), "CERRADA", sessionID,
 	)
 	return err
 }
@@ -63,7 +63,7 @@ func (s *SessionService) CloseSession(sessionID string) error {
 // Cerrar todas las sesiones de un usuario
 func (s *SessionService) CloseAllUserSessions(userName string) error {
 	_, err := s.db.Exec(
-		"UPDATE sesiones SET fechaFin = ?, estado = ? WHERE userName = ? AND estado = 'ACTIVA'",
+		"UPDATE sesiones SET fechaFin = @p1, estado = @p2 WHERE userName = @p3 AND estado = 'ACTIVA'",
 		time.Now(), "CERRADA", userName,
 	)
 	return err
@@ -72,7 +72,7 @@ func (s *SessionService) CloseAllUserSessions(userName string) error {
 // Obtener sesiones activas de un usuario
 func (s *SessionService) GetActiveSessions(userName string) ([]Session, error) {
 	rows, err := s.db.Query(
-		"SELECT sessionID, userName, fechaInicio, fechaFin, ipAddress, userAgent, estado FROM sesiones WHERE userName = ? AND estado = 'ACTIVA'",
+		"SELECT sessionID, userName, fechaInicio, fechaFin, ipAddress, userAgent, estado FROM sesiones WHERE userName = @p1 AND estado = 'ACTIVA'",
 		userName,
 	)
 	if err != nil {
