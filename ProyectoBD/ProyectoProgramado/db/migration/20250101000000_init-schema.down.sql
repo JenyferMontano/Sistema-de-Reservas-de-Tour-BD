@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS sesiones;
+DROP TABLE IF EXISTS auditoria_accesos;
+DROP TABLE IF EXISTS auditoria_operaciones;
+DROP TABLE IF EXISTS auditoria_sesiones;
 DROP TABLE detallereserva;
 DROP TABLE reserva;
 DROP TABLE usuario;
