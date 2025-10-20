@@ -251,6 +251,10 @@ BEGIN
                     ', total: ' + CAST(total AS NVARCHAR)
                 FROM deleted WHERE numReserva = @registroId
             END
+            ELSE IF @operacion = 'INSERT'
+            BEGIN
+                SET @valoresAnteriores = 'REGISTRO_NUEVO'
+            END
             
             -- Insertar en auditoría
             INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
@@ -362,6 +366,10 @@ BEGIN
                     ', total: ' + CAST(total AS NVARCHAR)
                 FROM deleted WHERE idFactura = @registroId
             END
+            ELSE IF @operacion = 'INSERT'
+            BEGIN
+                SET @valoresAnteriores = 'REGISTRO_NUEVO'
+            END
             
             -- Insertar en auditoría
             INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
@@ -466,8 +474,12 @@ BEGIN
                     ', image: ' + ISNULL(image, 'NULL')
                 FROM deleted WHERE userName = @userName
             END
+            ELSE IF @operacion = 'INSERT'
+            BEGIN
+                SET @valoresAnteriores = 'REGISTRO_NUEVO'
+            END
             
-            -- Insertar en auditoría
+            -- Insertar en auditoría (usar el mismo userName para evitar FK constraint)
             INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
             VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, @valoresNuevos, @ipAddress)
             
@@ -499,7 +511,8 @@ BEGIN
                 ', image: ' + ISNULL(image, 'NULL')
             FROM deleted WHERE userName = @userName
             
-            -- Insertar en auditoría
+            -- Para DELETE, insertar antes de que se elimine el usuario
+            -- Usar el userName del registro que se va a eliminar
             INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
             VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, NULL, @ipAddress)
             

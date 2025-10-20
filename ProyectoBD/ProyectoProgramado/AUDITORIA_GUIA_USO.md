@@ -64,6 +64,16 @@ Maneja sesiones activas del sistema.
 
 ## Consultas Útiles
 
+### UTILES EN SQL SERVER PARA MI
+-- Ver sesiones (deben estar cerradas después del logout)
+SELECT * FROM sesiones ORDER BY fechaInicio DESC;
+
+-- Ver auditoría de accesos (debe registrar login/logout)
+SELECT * FROM auditoria_accesos ORDER BY fechaAcceso DESC;
+
+-- Ver auditoría de sesiones (debe registrar inicio y fin)
+SELECT * FROM auditoria_sesiones ORDER BY fechaInicio DESC;
+
 ### Ver actividad reciente
 ```sql
 SELECT TOP 50 * FROM auditoria_accesos 
@@ -214,8 +224,3 @@ El sistema cumple con los requisitos de auditoría:
 - No es necesario modificar el código existente de los handlers
 - La auditoría es completamente transparente para los usuarios
 - Se puede consultar la auditoría usando las consultas SQL proporcionadas
-
-
-// mira al intentnta r eliminar un usuario me sale esto al igual que no me deja actulizar un usuario, mira: {
-    "error": "mssql: Instrucción INSERT en conflicto con la restricción FOREIGN KEY 'FK_auditoria_operaciones_usuario'. El conflicto ha aparecido en la base de datos 'reservas_tour', tabla 'dbo.usuario', column 'userName'."
-}   Sigue sin guardarse lo logout, todas las sesiones me salen abiertas ademas de ello,auditoria de sesiones, accesos no sale nada. pero el de operaciones si ademas en el de operaciones en el valor anterior sale null en los insert.

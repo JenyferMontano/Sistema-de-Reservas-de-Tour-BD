@@ -136,16 +136,16 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 		userAgent := ctx.Request.UserAgent()
 		sessionID := ctx.GetHeader("x-session-id")
 
-		// Procesar logout
-		ctx.Next()
-
-		// Obtener información del usuario después del procesamiento
+		// Obtener información del usuario autenticado
 		userName := "anonymous"
-		if logoutUser, exists := ctx.Get("logout_user"); exists {
-			if username, ok := logoutUser.(string); ok {
-				userName = username
+		if authorized, exists := ctx.Get("authorized"); exists {
+			if payload, ok := authorized.(*security.Payload); ok {
+				userName = payload.Username
 			}
 		}
+
+		// Procesar logout
+		ctx.Next()
 
 		// Registrar acceso al endpoint de logout
 		codigoRespuesta := ctx.Writer.Status()
