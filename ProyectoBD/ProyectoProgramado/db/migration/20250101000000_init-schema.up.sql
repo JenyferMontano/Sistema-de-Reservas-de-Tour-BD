@@ -1,10 +1,7 @@
-CREATE DATABASE reservas_tour
-COLLATE Modern_Spanish_CI_AI;
-GO
 
 -- Tabla persona
 CREATE TABLE persona (
-    idPersona INT IDENTITY(1,1) PRIMARY KEY,
+    idPersona INT  PRIMARY KEY,
     nombre NVARCHAR(25) NOT NULL,
     apellido_1 NVARCHAR(25) NOT NULL,
     apellido_2 NVARCHAR(25) NOT NULL,
@@ -13,7 +10,7 @@ CREATE TABLE persona (
     telefono NVARCHAR(20) NOT NULL,
     correo NVARCHAR(40) NOT NULL UNIQUE
 );
-GO
+
 
 -- Tabla tour
 CREATE TABLE tour (
@@ -26,7 +23,7 @@ CREATE TABLE tour (
     ubicacion NVARCHAR(45) NOT NULL,
     imageTour NVARCHAR(255) NOT NULL
 );
-GO
+
 
 -- Tabla usuario
 CREATE TABLE usuario (
@@ -40,7 +37,7 @@ CREATE TABLE usuario (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-GO
+
 
 -- Tabla reserva
 CREATE TABLE reserva (
@@ -61,7 +58,7 @@ CREATE TABLE reserva (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-GO
+
 
 -- Tabla factura
 CREATE TABLE factura (
@@ -83,7 +80,7 @@ CREATE TABLE factura (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-GO
+
 
 -- Tabla detallereserva
 CREATE TABLE detallereserva (
@@ -105,7 +102,7 @@ CREATE TABLE detallereserva (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-GO
+
 
 -- Tabla detallefactura
 CREATE TABLE detallefactura (
@@ -130,4 +127,66 @@ CREATE TABLE detallefactura (
         ON DELETE SET NULL
         ON UPDATE CASCADE
 );
-GO
+
+
+CREATE TABLE auditoria_sesiones (
+    idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
+    userName NVARCHAR(25) NOT NULL,
+    fechaInicio DATETIME NOT NULL,
+    fechaFin DATETIME NULL,
+    ipAddress NVARCHAR(45) NOT NULL,
+    userAgent NVARCHAR(255) NULL,
+    estado NVARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
+    CONSTRAINT FK_auditoria_sesiones_usuario FOREIGN KEY (userName)
+        REFERENCES usuario (userName)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE auditoria_operaciones (
+    idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
+    userName NVARCHAR(25) NOT NULL,
+    tablaAfectada NVARCHAR(50) NOT NULL,
+    operacion NVARCHAR(10) NOT NULL, -- 'INSERT', 'UPDATE', 'DELETE'
+    registroId INT NOT NULL,
+    valoresAnteriores NVARCHAR(MAX) NULL,
+    valoresNuevos NVARCHAR(MAX) NULL,
+    fechaOperacion DATETIME NOT NULL DEFAULT GETDATE(),
+    ipAddress NVARCHAR(45) NOT NULL,
+    CONSTRAINT FK_auditoria_operaciones_usuario FOREIGN KEY (userName)
+        REFERENCES usuario (userName)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE auditoria_accesos (
+    idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
+    userName NVARCHAR(25) NOT NULL,
+    endpoint NVARCHAR(100) NOT NULL,
+    metodo NVARCHAR(10) NOT NULL, -- 'GET', 'POST', 'PUT', 'DELETE'
+    codigoRespuesta INT NOT NULL,
+    fechaAcceso DATETIME NOT NULL DEFAULT GETDATE(),
+    ipAddress NVARCHAR(45) NOT NULL,
+    userAgent NVARCHAR(255) NULL,
+    CONSTRAINT FK_auditoria_accesos_usuario FOREIGN KEY (userName)
+        REFERENCES usuario (userName)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE sesiones (
+    sessionID NVARCHAR(255) PRIMARY KEY,
+    userName NVARCHAR(25) NOT NULL,
+    fechaInicio DATETIME NOT NULL DEFAULT GETDATE(),
+    fechaFin DATETIME NULL,
+    ipAddress NVARCHAR(45) NOT NULL,
+    userAgent NVARCHAR(255) NULL,
+    estado NVARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
+    CONSTRAINT FK_sesiones_usuario FOREIGN KEY (userName)
+        REFERENCES usuario (userName)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
