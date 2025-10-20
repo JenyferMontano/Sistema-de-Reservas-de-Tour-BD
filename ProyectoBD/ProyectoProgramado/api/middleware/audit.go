@@ -5,7 +5,6 @@ import (
 	"ProyectoProgramadoI/security"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,8 +12,6 @@ import (
 // Middleware de auditoría para registrar accesos a endpoints
 func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		start := time.Now()
-		
 		// Obtener información del request
 		userName := "anonymous"
 		if authorized, exists := ctx.Get("authorized"); exists {
@@ -34,8 +31,11 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 		// Registrar auditoría después del procesamiento
 		codigoRespuesta := ctx.Writer.Status()
 		
-		// Solo registrar si no es una petición de health check o estática
-		if !strings.Contains(endpoint, "/health") && !strings.Contains(endpoint, "/static") {
+		// Solo registrar si no es una petición de health check, estática o login/logout (estos tienen middleware específico)
+		if !strings.Contains(endpoint, "/health") && 
+		   !strings.Contains(endpoint, "/static") && 
+		   !strings.Contains(endpoint, "/login") && 
+		   !strings.Contains(endpoint, "/logout") {
 			go func() {
 				auditService.LogAccess(
 					userName,
@@ -82,17 +82,33 @@ func SessionValidationMiddleware(sessionService *services.SessionService) gin.Ha
 // Middleware para registrar inicio de sesión
 func LoginAuditMiddleware(auditService *services.AuditService, sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Solo procesar después del login exitoso
+		// Obtener información del request antes del procesamiento
+		endpoint := ctx.Request.URL.Path
+		metodo := ctx.Request.Method
+		ipAddress := getClientIP(ctx)
+		userAgent := ctx.Request.UserAgent()
+		
+		// Procesar request
 		ctx.Next()
+		
+		// Registrar acceso al endpoint de login
+		codigoRespuesta := ctx.Writer.Status()
+		go func() {
+			auditService.LogAccess(
+				"anonymous", // Usuario anónimo antes del login
+				endpoint,
+				metodo,
+				ipAddress,
+				userAgent,
+				int32(codigoRespuesta),
+			)
+		}()
 		
 		// Verificar si el login fue exitoso (status 200)
 		if ctx.Writer.Status() == http.StatusOK {
 			// Obtener información del usuario del contexto
 			if userName, exists := ctx.Get("login_user"); exists {
 				if username, ok := userName.(string); ok {
-					ipAddress := getClientIP(ctx)
-					userAgent := ctx.Request.UserAgent()
-					
 					// Registrar inicio de sesión
 					go func() {
 						auditService.LogSessionStart(username, ipAddress, userAgent)
@@ -113,25 +129,44 @@ func LoginAuditMiddleware(auditService *services.AuditService, sessionService *s
 // Middleware para registrar cierre de sesión
 func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Obtener sessionID antes del procesamiento
+		// Obtener información del request antes del procesamiento
+		endpoint := ctx.Request.URL.Path
+		metodo := ctx.Request.Method
+		ipAddress := getClientIP(ctx)
+		userAgent := ctx.Request.UserAgent()
 		sessionID := ctx.GetHeader("x-session-id")
+		
+		// Obtener información del usuario antes del logout
+		userName := "anonymous"
+		if authorized, exists := ctx.Get("authorized"); exists {
+			if payload, ok := authorized.(*security.Payload); ok {
+				userName = payload.Username
+			}
+		}
 		
 		// Procesar logout
 		ctx.Next()
 		
+		// Registrar acceso al endpoint de logout
+		codigoRespuesta := ctx.Writer.Status()
+		go func() {
+			auditService.LogAccess(
+				userName,
+				endpoint,
+				metodo,
+				ipAddress,
+				userAgent,
+				int32(codigoRespuesta),
+			)
+		}()
+		
 		// Registrar cierre de sesión si fue exitoso
-		if ctx.Writer.Status() == http.StatusOK && sessionID != "" {
-			// Obtener información del usuario
-			userName := "anonymous"
-			if authorized, exists := ctx.Get("authorized"); exists {
-				if payload, ok := authorized.(*security.Payload); ok {
-					userName = payload.Username
-				}
-			}
-			
+		if ctx.Writer.Status() == http.StatusOK {
 			go func() {
 				auditService.LogSessionEnd(userName)
-				sessionService.CloseSession(sessionID)
+				if sessionID != "" {
+					sessionService.CloseSession(sessionID)
+				}
 			}()
 		}
 	}

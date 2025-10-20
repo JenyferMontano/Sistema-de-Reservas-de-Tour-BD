@@ -1,7 +1,15 @@
+-- Eliminar triggers de auditoría
+DROP TRIGGER IF EXISTS tr_auditoria_usuarios;
+DROP TRIGGER IF EXISTS tr_auditoria_facturas;
+DROP TRIGGER IF EXISTS tr_auditoria_reservas;
+
+-- Eliminar tablas de auditoría
 DROP TABLE IF EXISTS sesiones;
 DROP TABLE IF EXISTS auditoria_accesos;
 DROP TABLE IF EXISTS auditoria_operaciones;
 DROP TABLE IF EXISTS auditoria_sesiones;
+
+-- Eliminar tablas principales
 DROP TABLE detallereserva;
 DROP TABLE reserva;
 DROP TABLE usuario;
