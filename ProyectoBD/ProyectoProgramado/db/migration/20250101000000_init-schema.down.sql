@@ -1,7 +1,3 @@
--- Eliminar triggers de auditoría
-DROP TRIGGER IF EXISTS tr_auditoria_usuarios;
-DROP TRIGGER IF EXISTS tr_auditoria_facturas;
-DROP TRIGGER IF EXISTS tr_auditoria_reservas;
 
 -- Eliminar tablas de auditoría
 DROP TABLE IF EXISTS sesiones;
