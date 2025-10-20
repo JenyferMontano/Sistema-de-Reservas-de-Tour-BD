@@ -48,3 +48,12 @@ func (s *AuditService) LogSessionEnd(userName string) error {
 	)
 	return err
 }
+
+// Registrar fin de sesión específica por sessionID
+func (s *AuditService) LogSessionEndByID(sessionID string) error {
+	_, err := s.db.Exec(
+		"UPDATE auditoria_sesiones SET fechaFin = ?, estado = ? WHERE idAuditoria = (SELECT TOP 1 idAuditoria FROM auditoria_sesiones WHERE userName = (SELECT userName FROM sesiones WHERE sessionID = ?) AND estado = 'ACTIVA' ORDER BY fechaInicio DESC)",
+		time.Now(), "CERRADA", sessionID,
+	)
+	return err
+}
