@@ -214,3 +214,8 @@ El sistema cumple con los requisitos de auditoría:
 - No es necesario modificar el código existente de los handlers
 - La auditoría es completamente transparente para los usuarios
 - Se puede consultar la auditoría usando las consultas SQL proporcionadas
+
+
+// mira al intentnta r eliminar un usuario me sale esto al igual que no me deja actulizar un usuario, mira: {
+    "error": "mssql: Instrucción INSERT en conflicto con la restricción FOREIGN KEY 'FK_auditoria_operaciones_usuario'. El conflicto ha aparecido en la base de datos 'reservas_tour', tabla 'dbo.usuario', column 'userName'."
+}   Sigue sin guardarse lo logout, todas las sesiones me salen abiertas ademas de ello,auditoria de sesiones, accesos no sale nada. pero el de operaciones si ademas en el de operaciones en el valor anterior sale null en los insert.
