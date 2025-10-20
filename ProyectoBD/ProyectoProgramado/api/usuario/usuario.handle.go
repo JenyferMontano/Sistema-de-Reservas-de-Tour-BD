@@ -351,9 +351,26 @@ func (h *Handler) Login(ctx *gin.Context) {
 
 // Logout de usuario
 func (h *Handler) Logout(ctx *gin.Context) {
+	// Intentar obtener el usuario del token si existe
+	userName := "anonymous"
+	authHeader := ctx.GetHeader("authorization")
+	if len(authHeader) > 0 {
+		fields := strings.Fields(authHeader)
+		if len(fields) >= 2 && strings.ToLower(fields[0]) == "bearer" {
+			accessToken := fields[1]
+			payload, err := h.tokenBuilder.VerifyToken(accessToken)
+			if err == nil {
+				userName = payload.Username
+				// Agregar información del usuario al contexto para el middleware
+				ctx.Set("logout_user", userName)
+			}
+		}
+	}
+
 	// El middleware de auditoría se encargará de registrar el logout
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Sesión cerrada exitosamente",
+		"user":    userName,
 	})
 }
 
