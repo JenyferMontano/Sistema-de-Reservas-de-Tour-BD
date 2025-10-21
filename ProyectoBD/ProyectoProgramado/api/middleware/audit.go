@@ -31,11 +31,10 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 		// Registrar auditoría después del procesamiento
 		codigoRespuesta := ctx.Writer.Status()
 
-		// Solo registrar si no es una petición de health check, estática o login/logout (estos tienen middleware específico)
+		// Registrar todos los endpoints excepto health check y archivos estáticos
+		// Los endpoints de login/logout se registran por sus middleware específicos
 		if !strings.Contains(endpoint, "/health") &&
-			!strings.Contains(endpoint, "/static") &&
-			!strings.Contains(endpoint, "/login") &&
-			!strings.Contains(endpoint, "/logout") {
+			!strings.Contains(endpoint, "/static") {
 			go func() {
 				auditService.LogAccess(
 					userName,
