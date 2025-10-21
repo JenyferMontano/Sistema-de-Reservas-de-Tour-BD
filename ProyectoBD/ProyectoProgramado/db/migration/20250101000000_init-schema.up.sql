@@ -422,10 +422,12 @@ BEGIN
 END
 GO
 
--- Trigger para auditoría de usuarios
-CREATE TRIGGER tr_auditoria_usuarios
+-- Triggers para auditoría de usuarios (separados para evitar problemas de FK)
+
+-- Trigger para INSERT y UPDATE (AFTER)
+CREATE TRIGGER tr_auditoria_usuarios_insert_update
 ON usuario
-AFTER INSERT, UPDATE, DELETE
+AFTER INSERT, UPDATE
 AS
 BEGIN
     DECLARE @operacion NVARCHAR(10)
@@ -438,89 +440,93 @@ BEGIN
     -- Determinar tipo de operación
     IF EXISTS (SELECT * FROM inserted) AND EXISTS (SELECT * FROM deleted)
         SET @operacion = 'UPDATE'
-    ELSE IF EXISTS (SELECT * FROM inserted)
-        SET @operacion = 'INSERT'
     ELSE
-        SET @operacion = 'DELETE'
+        SET @operacion = 'INSERT'
     
     -- Procesar registros afectados
-    IF @operacion = 'INSERT' OR @operacion = 'UPDATE'
-    BEGIN
-        DECLARE insert_cursor CURSOR FOR
-        SELECT userName FROM inserted
-        
-        OPEN insert_cursor
-        FETCH NEXT FROM insert_cursor INTO @userName
-        
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            SET @registroId = @userName
-            
-            -- Construir valores nuevos
-            SELECT @valoresNuevos = 
-                'userName: ' + userName + 
-                ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
-                ', rol: ' + rol + 
-                ', image: ' + ISNULL(image, 'NULL')
-            FROM inserted WHERE userName = @userName
-            
-            -- Construir valores anteriores para UPDATE
-            IF @operacion = 'UPDATE'
-            BEGIN
-                SELECT @valoresAnteriores = 
-                    'userName: ' + userName + 
-                    ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
-                    ', rol: ' + rol + 
-                    ', image: ' + ISNULL(image, 'NULL')
-                FROM deleted WHERE userName = @userName
-            END
-            ELSE IF @operacion = 'INSERT'
-            BEGIN
-                SET @valoresAnteriores = 'REGISTRO_NUEVO'
-            END
-            
-            -- Insertar en auditoría (usar el mismo userName para evitar FK constraint)
-            INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-            VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, @valoresNuevos, @ipAddress)
-            
-            FETCH NEXT FROM insert_cursor INTO @userName
-        END
-        
-        CLOSE insert_cursor
-        DEALLOCATE insert_cursor
-    END
+    DECLARE insert_cursor CURSOR FOR
+    SELECT userName FROM inserted
     
-    -- Procesar registros eliminados - IMPORTANTE: usar INSTEAD OF para DELETE
-    IF @operacion = 'DELETE'
+    OPEN insert_cursor
+    FETCH NEXT FROM insert_cursor INTO @userName
+    
+    WHILE @@FETCH_STATUS = 0
     BEGIN
-        DECLARE delete_cursor CURSOR FOR
-        SELECT userName FROM deleted
+        SET @registroId = @userName
         
-        OPEN delete_cursor
-        FETCH NEXT FROM delete_cursor INTO @userName
+        -- Construir valores nuevos
+        SELECT @valoresNuevos = 
+            'userName: ' + userName + 
+            ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
+            ', rol: ' + rol + 
+            ', image: ' + ISNULL(image, 'NULL')
+        FROM inserted WHERE userName = @userName
         
-        WHILE @@FETCH_STATUS = 0
+        -- Construir valores anteriores para UPDATE
+        IF @operacion = 'UPDATE'
         BEGIN
-            SET @registroId = @userName
-            
-            -- Construir valores anteriores ANTES de eliminar
             SELECT @valoresAnteriores = 
                 'userName: ' + userName + 
                 ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
                 ', rol: ' + rol + 
                 ', image: ' + ISNULL(image, 'NULL')
             FROM deleted WHERE userName = @userName
-            
-            -- Insertar en auditoría ANTES de que se elimine el usuario
-            -- Esto evita el error de FK constraint
-            INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-            VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, NULL, @ipAddress)
-            
-            FETCH NEXT FROM delete_cursor INTO @userName
+        END
+        ELSE IF @operacion = 'INSERT'
+        BEGIN
+            SET @valoresAnteriores = 'REGISTRO_NUEVO'
         END
         
-        CLOSE delete_cursor
-        DEALLOCATE delete_cursor
+        -- Insertar en auditoría
+        INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
+        VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, @valoresNuevos, @ipAddress)
+        
+        FETCH NEXT FROM insert_cursor INTO @userName
     END
+    
+    CLOSE insert_cursor
+    DEALLOCATE insert_cursor
+END
+GO
+
+-- Trigger para DELETE (INSTEAD OF)
+CREATE TRIGGER tr_auditoria_usuarios_delete
+ON usuario
+INSTEAD OF DELETE
+AS
+BEGIN
+    DECLARE @userName NVARCHAR(25)
+    DECLARE @valoresAnteriores NVARCHAR(MAX)
+    DECLARE @ipAddress NVARCHAR(45) = '127.0.0.1'
+    
+    -- Procesar registros que se van a eliminar
+    DECLARE delete_cursor CURSOR FOR
+    SELECT userName FROM deleted
+    
+    OPEN delete_cursor
+    FETCH NEXT FROM delete_cursor INTO @userName
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Construir valores anteriores ANTES de eliminar (usar la tabla original, no deleted)
+        SELECT @valoresAnteriores = 
+            'userName: ' + userName + 
+            ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
+            ', rol: ' + rol + 
+            ', image: ' + ISNULL(image, 'NULL')
+        FROM usuario WHERE userName = @userName
+        
+        -- Insertar en auditoría ANTES de eliminar el usuario
+        INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
+        VALUES (@userName, 'usuario', 'DELETE', 0, @valoresAnteriores, NULL, @ipAddress)
+        
+        FETCH NEXT FROM delete_cursor INTO @userName
+    END
+    
+    CLOSE delete_cursor
+    DEALLOCATE delete_cursor
+    
+    -- Ahora eliminar los registros
+    DELETE FROM usuario WHERE userName IN (SELECT userName FROM deleted)
 END
 GO
