@@ -42,15 +42,27 @@ SYMMETRIC_KEY=12345678123456781234567812345678
 ## Sistema de Auditoría
 
 El sistema incluye auditoría automática para:
-- **Accesos a endpoints** - Registra todos los accesos a la API
+- **Accesos a endpoints** - Registra TODOS los accesos a la API (GET, POST, PUT, DELETE)
 - **Sesiones de usuario** - Registra inicio y fin de sesiones
 - **Operaciones CRUD** - Registra cambios en reservas, facturas y usuarios
 
 ### Tablas de Auditoría
-- `auditoria_accesos` - Registra accesos a endpoints
+- `auditoria_accesos` - Registra accesos a endpoints (todos los métodos HTTP)
 - `auditoria_sesiones` - Registra sesiones de usuario
 - `auditoria_operaciones` - Registra operaciones CRUD
 - `sesiones` - Maneja sesiones activas
+
+### Verificar Auditoría
+```sql
+-- Ver todos los accesos
+SELECT * FROM auditoria_accesos ORDER BY fechaAcceso DESC;
+
+-- Ver accesos por usuario
+SELECT userName, COUNT(*) as accesos FROM auditoria_accesos GROUP BY userName;
+
+-- Ver endpoints más accedidos
+SELECT endpoint, metodo, COUNT(*) as accesos FROM auditoria_accesos GROUP BY endpoint, metodo;
+```
 
 ## Ejecutar el Sistema
 
