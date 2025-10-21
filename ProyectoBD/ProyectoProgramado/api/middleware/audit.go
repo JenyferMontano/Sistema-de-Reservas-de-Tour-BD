@@ -33,10 +33,9 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 		}
 
 		// Registrar todos los endpoints excepto health check y archivos estáticos
-		// Excluir login y logout que tienen middleware específicos
+		// Excluir solo logout que tiene middleware específico
 		if !strings.Contains(endpoint, "/health") &&
 			!strings.Contains(endpoint, "/static") &&
-			endpoint != "/api/v1/login" &&
 			endpoint != "/api/v1/logout" {
 			go func() {
 				auditService.LogAccess(
@@ -100,26 +99,11 @@ func SessionValidationMiddleware(sessionService *services.SessionService) gin.Ha
 func LoginAuditMiddleware(auditService *services.AuditService, sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Obtener información del request antes del procesamiento
-		endpoint := ctx.Request.URL.Path
-		metodo := ctx.Request.Method
 		ipAddress := getClientIP(ctx)
 		userAgent := ctx.Request.UserAgent()
 
 		// Procesar request
 		ctx.Next()
-
-		// Registrar acceso al endpoint de login
-		codigoRespuesta := ctx.Writer.Status()
-		go func() {
-			auditService.LogAccess(
-				"anonymous", // Usuario anónimo antes del login
-				endpoint,
-				metodo,
-				ipAddress,
-				userAgent,
-				int32(codigoRespuesta),
-			)
-		}()
 
 		// Verificar si el login fue exitoso (status 200)
 		if ctx.Writer.Status() == http.StatusOK {
