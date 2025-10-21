@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+/*
 type CreateDetalleFacturaParams struct {
 	Factura        int32   `json:"factura"`
 	Tour           int32   `json:"tour"`
@@ -59,6 +60,7 @@ func UpdateDetalleFactura(db *sql.DB, p UpdateDetalleFacturaParams) error {
 	}
 	return nil
 }
+*/
 
 type DetalleFacturaAllRows struct {
 	IdDetalleFactura int32   `json:"idDetalleFactura"`

@@ -228,6 +228,7 @@ func GetReservasByPersona(db *sql.DB, huesped int32) ([]GetReservasByPersonaRow,
 	return reservas, nil
 }
 
+/*
 type UpdateReservaParams struct {
 	Numreserva    int32     `json:"numreserva"`
 	Usuario       string    `json:"usuario"`
@@ -255,6 +256,7 @@ func UpdateReserva(db *sql.DB, r UpdateReservaParams) error {
 	)
 	return err
 }
+	*/
 
 type UpdateReservaEstadoParams struct {
 	Numreserva    int32  `json:"numreserva"`
