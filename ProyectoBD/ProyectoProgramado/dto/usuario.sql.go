@@ -52,13 +52,14 @@ func GetAllUsuarios(db *sql.DB) ([]GetAllUsuariosRow, error) {
 	return usuarios, nil
 }
 
-func GetCorreoByUserName(db *sql.DB, username string) (string, error) {
-	row := db.QueryRow("EXEC pa_usuario_getCorreoByUserName @userName = @p1", username)
-	var correo string
-	err := row.Scan(&correo)
-	return correo, err
-}
-
+/*
+	func GetCorreoByUserName(db *sql.DB, username string) (string, error) {
+		row := db.QueryRow("EXEC pa_usuario_getCorreoByUserName @userName = @p1", username)
+		var correo string
+		err := row.Scan(&correo)
+		return correo, err
+	}
+*/
 type GetUsuarioByCorreoRow struct {
 	Username  string         `json:"username"`
 	Password  string         `json:"password"`
@@ -109,10 +110,11 @@ func UpdateUsuario(db *sql.DB, u UpdateUsuarioParams) error {
 	return err
 }
 
+/*
 func UsuarioExiste(db *sql.DB, username string) (int64, error) {
 	row := db.QueryRow("EXEC pa_usuario_count @userName = @p1", username)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
-
+*/
