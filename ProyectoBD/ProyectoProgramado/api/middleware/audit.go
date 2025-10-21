@@ -55,6 +55,12 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 // Middleware para validar sesiones
 func SessionValidationMiddleware(sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// Permitir acceso a login sin validación de sesión
+		if ctx.Request.URL.Path == "/api/v1/login" {
+			ctx.Next()
+			return
+		}
+
 		// Solo validar si hay token de autorización
 		authHeader := ctx.GetHeader("authorization")
 		if len(authHeader) == 0 {
@@ -140,6 +146,12 @@ func LoginAuditMiddleware(auditService *services.AuditService, sessionService *s
 // Middleware para registrar cierre de sesión
 func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// Obtener información del request antes del procesamiento
+		endpoint := ctx.Request.URL.Path
+		metodo := ctx.Request.Method
+		ipAddress := getClientIP(ctx)
+		userAgent := ctx.Request.UserAgent()
+
 		// Obtener información del usuario autenticado
 		userName := "anonymous"
 		if authorized, exists := ctx.Get("authorized"); exists {
@@ -150,6 +162,19 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 
 		// Procesar logout
 		ctx.Next()
+
+		// Registrar acceso al endpoint de logout
+		codigoRespuesta := ctx.Writer.Status()
+		go func() {
+			auditService.LogAccess(
+				userName,
+				endpoint,
+				metodo,
+				ipAddress,
+				userAgent,
+				int32(codigoRespuesta),
+			)
+		}()
 
 		// Registrar cierre de sesión si fue exitoso
 		if ctx.Writer.Status() == http.StatusOK && userName != "anonymous" {
