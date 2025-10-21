@@ -26,9 +26,20 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 
 		// Obtener información del usuario después del procesamiento
 		userName := "anonymous"
-		if authorized, exists := ctx.Get("authorized"); exists {
-			if payload, ok := authorized.(*security.Payload); ok {
-				userName = payload.Username
+
+		// Para login, obtener el usuario del contexto login_user
+		if endpoint == "/api/v1/login" {
+			if loginUser, exists := ctx.Get("login_user"); exists {
+				if username, ok := loginUser.(string); ok {
+					userName = username
+				}
+			}
+		} else {
+			// Para otras rutas, obtener del contexto authorized
+			if authorized, exists := ctx.Get("authorized"); exists {
+				if payload, ok := authorized.(*security.Payload); ok {
+					userName = payload.Username
+				}
 			}
 		}
 
