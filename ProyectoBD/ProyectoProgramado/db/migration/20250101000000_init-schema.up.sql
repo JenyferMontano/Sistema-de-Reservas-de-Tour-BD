@@ -1,3 +1,5 @@
+-- Migración de Base de Datos - Sistema de Reservas de Tour
+-- Solo contiene la estructura de tablas
 
 -- Tabla persona
 CREATE TABLE persona (
@@ -11,7 +13,6 @@ CREATE TABLE persona (
     correo NVARCHAR(40) NOT NULL UNIQUE
 );
 
-
 -- Tabla tour
 CREATE TABLE tour (
     idTour INT IDENTITY(1,1) PRIMARY KEY,
@@ -23,7 +24,6 @@ CREATE TABLE tour (
     ubicacion NVARCHAR(45) NOT NULL,
     imageTour NVARCHAR(255) NOT NULL
 );
-
 
 -- Tabla usuario
 CREATE TABLE usuario (
@@ -37,7 +37,6 @@ CREATE TABLE usuario (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
 
 -- Tabla reserva
 CREATE TABLE reserva (
@@ -58,7 +57,6 @@ CREATE TABLE reserva (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
 
 -- Tabla factura
 CREATE TABLE factura (
@@ -81,7 +79,6 @@ CREATE TABLE factura (
         ON UPDATE CASCADE
 );
 
-
 -- Tabla detallereserva
 CREATE TABLE detallereserva (
     idDetalle INT IDENTITY(1,1) PRIMARY KEY,
@@ -102,7 +99,6 @@ CREATE TABLE detallereserva (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
 
 -- Tabla detallefactura
 CREATE TABLE detallefactura (
@@ -128,7 +124,7 @@ CREATE TABLE detallefactura (
         ON UPDATE CASCADE
 );
 
-
+-- Tablas de Auditoría
 CREATE TABLE auditoria_sesiones (
     idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
     userName NVARCHAR(25) NOT NULL,
@@ -142,7 +138,6 @@ CREATE TABLE auditoria_sesiones (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
 
 CREATE TABLE auditoria_operaciones (
     idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
@@ -160,7 +155,6 @@ CREATE TABLE auditoria_operaciones (
         ON UPDATE CASCADE
 );
 
-
 CREATE TABLE auditoria_accesos (
     idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
     userName NVARCHAR(25) NOT NULL,
@@ -176,7 +170,6 @@ CREATE TABLE auditoria_accesos (
         ON UPDATE CASCADE
 );
 
-
 CREATE TABLE sesiones (
     sessionID NVARCHAR(255) PRIMARY KEY,
     userName NVARCHAR(25) NOT NULL,
@@ -190,343 +183,3 @@ CREATE TABLE sesiones (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
--- Triggers de Auditoría
-
--- Trigger para auditoría de reservas
-CREATE TRIGGER tr_auditoria_reservas
-ON reserva
-AFTER INSERT, UPDATE, DELETE
-AS
-BEGIN
-    DECLARE @operacion NVARCHAR(10)
-    DECLARE @registroId INT
-    DECLARE @userName NVARCHAR(25)
-    DECLARE @valoresAnteriores NVARCHAR(MAX)
-    DECLARE @valoresNuevos NVARCHAR(MAX)
-    DECLARE @ipAddress NVARCHAR(45) = '127.0.0.1' -- IP por defecto, se puede mejorar
-    
-    -- Determinar tipo de operación
-    IF EXISTS (SELECT * FROM inserted) AND EXISTS (SELECT * FROM deleted)
-        SET @operacion = 'UPDATE'
-    ELSE IF EXISTS (SELECT * FROM inserted)
-        SET @operacion = 'INSERT'
-    ELSE
-        SET @operacion = 'DELETE'
-    
-    -- Procesar registros afectados
-    IF @operacion = 'INSERT' OR @operacion = 'UPDATE'
-    BEGIN
-        DECLARE insert_cursor CURSOR FOR
-        SELECT numReserva, usuario FROM inserted
-        
-        OPEN insert_cursor
-        FETCH NEXT FROM insert_cursor INTO @registroId, @userName
-        
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- Construir valores nuevos
-            SELECT @valoresNuevos = 
-                'numReserva: ' + CAST(numReserva AS NVARCHAR) + 
-                ', usuario: ' + usuario + 
-                ', huesped: ' + CAST(huesped AS NVARCHAR) + 
-                ', estadoReserva: ' + estadoReserva + 
-                ', fechaReserva: ' + CONVERT(NVARCHAR, fechaReserva, 120) + 
-                ', subTotal: ' + CAST(subTotal AS NVARCHAR) + 
-                ', impuesto: ' + CAST(impuesto AS NVARCHAR) + 
-                ', total: ' + CAST(total AS NVARCHAR)
-            FROM inserted WHERE numReserva = @registroId
-            
-            -- Construir valores anteriores para UPDATE
-            IF @operacion = 'UPDATE'
-            BEGIN
-                SELECT @valoresAnteriores = 
-                    'numReserva: ' + CAST(numReserva AS NVARCHAR) + 
-                    ', usuario: ' + usuario + 
-                    ', huesped: ' + CAST(huesped AS NVARCHAR) + 
-                    ', estadoReserva: ' + estadoReserva + 
-                    ', fechaReserva: ' + CONVERT(NVARCHAR, fechaReserva, 120) + 
-                    ', subTotal: ' + CAST(subTotal AS NVARCHAR) + 
-                    ', impuesto: ' + CAST(impuesto AS NVARCHAR) + 
-                    ', total: ' + CAST(total AS NVARCHAR)
-                FROM deleted WHERE numReserva = @registroId
-            END
-            ELSE IF @operacion = 'INSERT'
-            BEGIN
-                SET @valoresAnteriores = 'REGISTRO_NUEVO'
-            END
-            
-            -- Insertar en auditoría
-            INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-            VALUES (@userName, 'reserva', @operacion, @registroId, @valoresAnteriores, @valoresNuevos, @ipAddress)
-            
-            FETCH NEXT FROM insert_cursor INTO @registroId, @userName
-        END
-        
-        CLOSE insert_cursor
-        DEALLOCATE insert_cursor
-    END
-    
-    -- Procesar registros eliminados
-    IF @operacion = 'DELETE'
-    BEGIN
-        DECLARE delete_cursor CURSOR FOR
-        SELECT numReserva, usuario FROM deleted
-        
-        OPEN delete_cursor
-        FETCH NEXT FROM delete_cursor INTO @registroId, @userName
-        
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- Construir valores anteriores
-            SELECT @valoresAnteriores = 
-                'numReserva: ' + CAST(numReserva AS NVARCHAR) + 
-                ', usuario: ' + usuario + 
-                ', huesped: ' + CAST(huesped AS NVARCHAR) + 
-                ', estadoReserva: ' + estadoReserva + 
-                ', fechaReserva: ' + CONVERT(NVARCHAR, fechaReserva, 120) + 
-                ', subTotal: ' + CAST(subTotal AS NVARCHAR) + 
-                ', impuesto: ' + CAST(impuesto AS NVARCHAR) + 
-                ', total: ' + CAST(total AS NVARCHAR)
-            FROM deleted WHERE numReserva = @registroId
-            
-            -- Insertar en auditoría
-            INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-            VALUES (@userName, 'reserva', @operacion, @registroId, @valoresAnteriores, NULL, @ipAddress)
-            
-            FETCH NEXT FROM delete_cursor INTO @registroId, @userName
-        END
-        
-        CLOSE delete_cursor
-        DEALLOCATE delete_cursor
-    END
-END
-GO
-
--- Trigger para auditoría de facturas
-CREATE TRIGGER tr_auditoria_facturas
-ON factura
-AFTER INSERT, UPDATE, DELETE
-AS
-BEGIN
-    DECLARE @operacion NVARCHAR(10)
-    DECLARE @registroId INT
-    DECLARE @userName NVARCHAR(25)
-    DECLARE @valoresAnteriores NVARCHAR(MAX)
-    DECLARE @valoresNuevos NVARCHAR(MAX)
-    DECLARE @ipAddress NVARCHAR(45) = '127.0.0.1'
-    
-    -- Determinar tipo de operación
-    IF EXISTS (SELECT * FROM inserted) AND EXISTS (SELECT * FROM deleted)
-        SET @operacion = 'UPDATE'
-    ELSE IF EXISTS (SELECT * FROM inserted)
-        SET @operacion = 'INSERT'
-    ELSE
-        SET @operacion = 'DELETE'
-    
-    -- Procesar registros afectados
-    IF @operacion = 'INSERT' OR @operacion = 'UPDATE'
-    BEGIN
-        DECLARE insert_cursor CURSOR FOR
-        SELECT f.idFactura, u.userName 
-        FROM inserted f
-        INNER JOIN reserva r ON f.reserva = r.numReserva
-        INNER JOIN usuario u ON r.usuario = u.userName
-        
-        OPEN insert_cursor
-        FETCH NEXT FROM insert_cursor INTO @registroId, @userName
-        
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- Construir valores nuevos
-            SELECT @valoresNuevos = 
-                'idFactura: ' + CAST(idFactura AS NVARCHAR) + 
-                ', persona: ' + CAST(persona AS NVARCHAR) + 
-                ', reserva: ' + CAST(reserva AS NVARCHAR) + 
-                ', estadoFactura: ' + estadoFactura + 
-                ', fechaFactura: ' + CONVERT(NVARCHAR, fechaFactura, 120) + 
-                ', metodoPago: ' + metodoPago + 
-                ', iva: ' + CAST(iva AS NVARCHAR) + 
-                ', subtotal: ' + CAST(subtotal AS NVARCHAR) + 
-                ', total: ' + CAST(total AS NVARCHAR)
-            FROM inserted WHERE idFactura = @registroId
-            
-            -- Construir valores anteriores para UPDATE
-            IF @operacion = 'UPDATE'
-            BEGIN
-                SELECT @valoresAnteriores = 
-                    'idFactura: ' + CAST(idFactura AS NVARCHAR) + 
-                    ', persona: ' + CAST(persona AS NVARCHAR) + 
-                    ', reserva: ' + CAST(reserva AS NVARCHAR) + 
-                    ', estadoFactura: ' + estadoFactura + 
-                    ', fechaFactura: ' + CONVERT(NVARCHAR, fechaFactura, 120) + 
-                    ', metodoPago: ' + metodoPago + 
-                    ', iva: ' + CAST(iva AS NVARCHAR) + 
-                    ', subtotal: ' + CAST(subtotal AS NVARCHAR) + 
-                    ', total: ' + CAST(total AS NVARCHAR)
-                FROM deleted WHERE idFactura = @registroId
-            END
-            ELSE IF @operacion = 'INSERT'
-            BEGIN
-                SET @valoresAnteriores = 'REGISTRO_NUEVO'
-            END
-            
-            -- Insertar en auditoría
-            INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-            VALUES (@userName, 'factura', @operacion, @registroId, @valoresAnteriores, @valoresNuevos, @ipAddress)
-            
-            FETCH NEXT FROM insert_cursor INTO @registroId, @userName
-        END
-        
-        CLOSE insert_cursor
-        DEALLOCATE insert_cursor
-    END
-    
-    -- Procesar registros eliminados
-    IF @operacion = 'DELETE'
-    BEGIN
-        DECLARE delete_cursor CURSOR FOR
-        SELECT f.idFactura, u.userName 
-        FROM deleted f
-        INNER JOIN reserva r ON f.reserva = r.numReserva
-        INNER JOIN usuario u ON r.usuario = u.userName
-        
-        OPEN delete_cursor
-        FETCH NEXT FROM delete_cursor INTO @registroId, @userName
-        
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- Construir valores anteriores
-            SELECT @valoresAnteriores = 
-                'idFactura: ' + CAST(idFactura AS NVARCHAR) + 
-                ', persona: ' + CAST(persona AS NVARCHAR) + 
-                ', reserva: ' + CAST(reserva AS NVARCHAR) + 
-                ', estadoFactura: ' + estadoFactura + 
-                ', fechaFactura: ' + CONVERT(NVARCHAR, fechaFactura, 120) + 
-                ', metodoPago: ' + metodoPago + 
-                ', iva: ' + CAST(iva AS NVARCHAR) + 
-                ', subtotal: ' + CAST(subtotal AS NVARCHAR) + 
-                ', total: ' + CAST(total AS NVARCHAR)
-            FROM deleted WHERE idFactura = @registroId
-            
-            -- Insertar en auditoría
-            INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-            VALUES (@userName, 'factura', @operacion, @registroId, @valoresAnteriores, NULL, @ipAddress)
-            
-            FETCH NEXT FROM delete_cursor INTO @registroId, @userName
-        END
-        
-        CLOSE delete_cursor
-        DEALLOCATE delete_cursor
-    END
-END
-GO
-
--- Triggers para auditoría de usuarios (separados para evitar problemas de FK)
-
--- Trigger para INSERT y UPDATE (AFTER)
-CREATE TRIGGER tr_auditoria_usuarios_insert_update
-ON usuario
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    DECLARE @operacion NVARCHAR(10)
-    DECLARE @registroId NVARCHAR(25)
-    DECLARE @userName NVARCHAR(25)
-    DECLARE @valoresAnteriores NVARCHAR(MAX)
-    DECLARE @valoresNuevos NVARCHAR(MAX)
-    DECLARE @ipAddress NVARCHAR(45) = '127.0.0.1'
-    
-    -- Determinar tipo de operación
-    IF EXISTS (SELECT * FROM inserted) AND EXISTS (SELECT * FROM deleted)
-        SET @operacion = 'UPDATE'
-    ELSE
-        SET @operacion = 'INSERT'
-    
-    -- Procesar registros afectados
-    DECLARE insert_cursor CURSOR FOR
-    SELECT userName FROM inserted
-    
-    OPEN insert_cursor
-    FETCH NEXT FROM insert_cursor INTO @userName
-    
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        SET @registroId = @userName
-        
-        -- Construir valores nuevos
-        SELECT @valoresNuevos = 
-            'userName: ' + userName + 
-            ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
-            ', rol: ' + rol + 
-            ', image: ' + ISNULL(image, 'NULL')
-        FROM inserted WHERE userName = @userName
-        
-        -- Construir valores anteriores para UPDATE
-        IF @operacion = 'UPDATE'
-        BEGIN
-            SELECT @valoresAnteriores = 
-                'userName: ' + userName + 
-                ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
-                ', rol: ' + rol + 
-                ', image: ' + ISNULL(image, 'NULL')
-            FROM deleted WHERE userName = @userName
-        END
-        ELSE IF @operacion = 'INSERT'
-        BEGIN
-            SET @valoresAnteriores = 'REGISTRO_NUEVO'
-        END
-        
-        -- Insertar en auditoría
-        INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-        VALUES (@userName, 'usuario', @operacion, 0, @valoresAnteriores, @valoresNuevos, @ipAddress)
-        
-        FETCH NEXT FROM insert_cursor INTO @userName
-    END
-    
-    CLOSE insert_cursor
-    DEALLOCATE insert_cursor
-END
-GO
-
--- Trigger para DELETE (INSTEAD OF)
-CREATE TRIGGER tr_auditoria_usuarios_delete
-ON usuario
-INSTEAD OF DELETE
-AS
-BEGIN
-    DECLARE @userName NVARCHAR(25)
-    DECLARE @valoresAnteriores NVARCHAR(MAX)
-    DECLARE @ipAddress NVARCHAR(45) = '127.0.0.1'
-    
-    -- Procesar registros que se van a eliminar
-    DECLARE delete_cursor CURSOR FOR
-    SELECT userName FROM deleted
-    
-    OPEN delete_cursor
-    FETCH NEXT FROM delete_cursor INTO @userName
-    
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        -- Construir valores anteriores ANTES de eliminar (usar la tabla original, no deleted)
-        SELECT @valoresAnteriores = 
-            'userName: ' + userName + 
-            ', idPersona: ' + CAST(idPersona AS NVARCHAR) + 
-            ', rol: ' + rol + 
-            ', image: ' + ISNULL(image, 'NULL')
-        FROM usuario WHERE userName = @userName
-        
-        -- Insertar en auditoría ANTES de eliminar el usuario
-        INSERT INTO auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-        VALUES (@userName, 'usuario', 'DELETE', 0, @valoresAnteriores, NULL, @ipAddress)
-        
-        FETCH NEXT FROM delete_cursor INTO @userName
-    END
-    
-    CLOSE delete_cursor
-    DEALLOCATE delete_cursor
-    
-    -- Ahora eliminar los registros
-    DELETE FROM usuario WHERE userName IN (SELECT userName FROM deleted)
-END
-GO
