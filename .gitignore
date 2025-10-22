@@ -1,0 +1,8 @@
+# Root .gitignore for the repository
+# Ignore node_modules in the frontend folder (ProyectoIFront)
+/ProyectoIFront/node_modules/
+
+# Also ignore node_modules if the frontend folder is named ProyectoFront (common naming variant)
+/ProyectoFront/node_modules/
+
+# You can add other global ignores below as needed
