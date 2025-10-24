@@ -3,6 +3,7 @@ package usuario
 import (
 	"ProyectoProgramadoI/dto"
 	"ProyectoProgramadoI/security"
+	"ProyectoProgramadoI/services"
 	"database/sql"
 	"io"
 	"net/http"
@@ -16,15 +17,20 @@ import (
 )
 
 type Handler struct {
-	db            *sql.DB
-	tokenBuilder  security.Builder
-	tokenDuration time.Duration
+	db                 *sql.DB
+	tokenBuilder       security.Builder
+	tokenDuration      time.Duration
+	sqlServerAuth      *services.SQLServerAuthService
 }
 
 func NewHandler(db *sql.DB, tokenBuilder security.Builder, tokenDuration time.Duration) *Handler {
-	return &Handler{db: db,
+	sqlServerAuth := services.NewSQLServerAuthService(db)
+	return &Handler{
+		db:            db,
 		tokenBuilder:  tokenBuilder,
-		tokenDuration: tokenDuration}
+		tokenDuration: tokenDuration,
+		sqlServerAuth: sqlServerAuth,
+	}
 }
 
 type createUsuarioRequest struct {
@@ -314,6 +320,40 @@ func (h *Handler) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	// Check if this is a SQL Server user
+	if h.sqlServerAuth.IsSQLServerUser(req.Email) {
+		// Handle SQL Server user authentication
+		username := h.sqlServerAuth.ExtractUsernameFromEmail(req.Email)
+		sqlUser, err := h.sqlServerAuth.AuthenticateSQLServerUser(username, req.Password)
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Correo o contraseña incorrectos"})
+			return
+		}
+
+		// Create token for SQL Server user
+		accessToken, err := h.tokenBuilder.CreateToken(sqlUser.Username, sqlUser.Email, sqlUser.Role, h.tokenDuration)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		resp := loginResponse{
+			AccessToken: accessToken,
+			User: userResponse{
+				UserName: sqlUser.Username,
+				Role:     sqlUser.Role,
+				Image:    nil, // SQL Server users don't have images
+			},
+		}
+
+		// Add user information to context for audit middleware
+		ctx.Set("login_user", sqlUser.Username)
+		ctx.JSON(http.StatusOK, resp)
+		return
+	}
+
+	// Handle application user authentication (existing logic)
 	user, err := dto.GetUsuarioByCorreo(h.db, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -344,7 +384,7 @@ func (h *Handler) Login(ctx *gin.Context) {
 			Image:    image,
 		},
 	}
-	// Agregar información del usuario al contexto para el middleware de auditoría
+	// Add user information to context for audit middleware
 	ctx.Set("login_user", user.Username)
 	ctx.JSON(http.StatusOK, resp)
 }
