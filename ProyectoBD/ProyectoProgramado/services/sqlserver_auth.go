@@ -26,12 +26,10 @@ type SQLServerUser struct {
 // AuthenticateSQLServerUser authenticates a user against SQL Server
 // Returns the user info if authentication is successful, nil otherwise
 func (s *SQLServerAuthService) AuthenticateSQLServerUser(username, password string) (*SQLServerUser, error) {
-	// Map SQL Server usernames to APPLICATION roles (not database roles)
-	// These are the roles that the application understands: admin, cliente
 	roleMapping := map[string]string{
-		"usuario_admin":       "admin",    // SQL Server admin -> application admin
-		"usuario_restringido": "cliente",  // SQL Server readonly -> application cliente
-		"usuario_auditor":     "cliente",  // SQL Server auditor -> application cliente
+		"usuario_admin":       "DBA",      
+		"usuario_restringido": "cliente",  
+		"usuario_auditor":     "cliente",
 	}
 	
 	// Check if the username is one of our predefined SQL Server users

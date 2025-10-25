@@ -7,6 +7,7 @@ import (
 	"ProyectoProgramadoI/api/middleware"
 	"ProyectoProgramadoI/api/persona"
 	"ProyectoProgramadoI/api/reserva"
+	"ProyectoProgramadoI/api/respaldo"
 	"ProyectoProgramadoI/api/tour"
 	"ProyectoProgramadoI/api/usuario"
 	"ProyectoProgramadoI/security"
@@ -77,6 +78,7 @@ func NewServer(db *sql.DB, tokenDuration time.Duration) (*Server, error) {
 	reserva.RegisterRoutes(api.Group("/reserva"), db, tokenBuilder)
 	factura.RegisterRoutes(api.Group("/factura"), db, tokenBuilder)
 	detallefactura.RegisterRoutes(api.Group("/detallefactura"), db, tokenBuilder)
+	respaldo.RegisterRoutes(api.Group("/respaldo"), db, tokenBuilder)
 
 	///FIN RUTAS///
 	server.router = router

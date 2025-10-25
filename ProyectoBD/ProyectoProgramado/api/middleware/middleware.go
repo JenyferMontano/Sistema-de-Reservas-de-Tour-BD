@@ -89,6 +89,34 @@ func RequireRoles(allowedRoles ...string) gin.HandlerFunc {
 	}
 }
 
+// Middleware específico para operaciones de DBA (respaldo y restauración)
+func RequireDBAPermissions() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authorized, exists := ctx.Get("authorized")
+		if !exists {
+			err := errors.New("usuario no autenticado")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
+			return
+		}
+
+		payload, ok := authorized.(*security.Payload)
+		if !ok {
+			err := errors.New("información del usuario no válida")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
+			return
+		}
+
+		// Verificar que el usuario tenga rol de DBA
+		if payload.Rol != "DBA" {
+			err := errors.New("acceso denegado: Se requieren permisos de DBA para esta operación")
+			ctx.AbortWithStatusJSON(http.StatusForbidden, errorResponse(err))
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
 func errorResponse(err error) gin.H {
 	return gin.H{
 		"error": err.Error(),

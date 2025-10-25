@@ -14,11 +14,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *sql.DB, tokenBuilder security.Build
 
 	// Ruta pública (requiere autenticación pero no solo admin)
 	rg.Use(middleware.AuthMiddleware(tokenBuilder))
-	rg.GET("/", middleware.RequireRoles("admin", "cliente"), h.GetAllTours)
+	rg.GET("/", middleware.RequireRoles("admin", "DBA", "cliente"), h.GetAllTours)
 
-	// Rutas solo para admin
+	// Rutas solo para admin y DBA
 	adminRoutes := rg.Group("/")
-	adminRoutes.Use(middleware.RequireRole("admin"))
+	adminRoutes.Use(middleware.RequireRoles("admin", "DBA"))
 	adminRoutes.POST("/", h.CreateTour)
 	adminRoutes.GET("/get/:id", h.GetTourById)
 	adminRoutes.GET("/tipo/:tipo", h.GetToursByTipo)
