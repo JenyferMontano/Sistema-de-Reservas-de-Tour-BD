@@ -14,7 +14,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *sql.DB, builder security.Builder, t
 	adminGroup := rg.Group("/")
 	adminGroup.Use(
 		middleware.AuthMiddleware(builder),
-		middleware.RequireRole("admin"),
+		middleware.RequireRoles("admin", "DBA"),
 	)
 	adminGroup.POST("/", h.CreateUsuario)
 	adminGroup.GET("/", h.GetAllUsuarios)

@@ -12,7 +12,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *sql.DB, tokenBuilder security.Build
 	h := NewHandler(db)
 	rg.Use(
 		middleware.AuthMiddleware(tokenBuilder),
-		middleware.RequireRole("admin"),
+		middleware.RequireRoles("admin", "DBA"),
 	)
 	rg.POST("/", h.CreatePersona)
 	rg.GET("/get/:id", h.GetPersonaById)
