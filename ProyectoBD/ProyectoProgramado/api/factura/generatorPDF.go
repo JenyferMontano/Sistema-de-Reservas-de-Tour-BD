@@ -30,31 +30,39 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.AddPage()
 
 	// --- Encabezado de la Empresa con diseño profesional ---
-	// Fondo del encabezado con color
-	pdf.SetFillColor(41, 128, 185) // Azul profesional
-	pdf.Rect(10, 10, 190, 35, "F")
-	
-	// Logo/Área de logo (rectángulo blanco)
-	pdf.SetFillColor(255, 255, 255)
-	pdf.Rect(15, 15, 25, 25, "F")
-	pdf.SetFont("Arial", "B", 8)
-	pdf.SetTextColor(128, 128, 128)
-	pdf.SetXY(17, 25)
-	pdf.Cell(0, 4, "LOGO")
-	
-	// Nombre de la empresa en blanco
-	pdf.SetTextColor(255, 255, 255)
-	pdf.SetFont("Arial", "B", 16)
-	pdf.SetXY(45, 18)
-	pdf.Cell(0, 8, utf8ToLatin1("Río Perdido Tours"))
-	
-	// Información de la empresa
-	pdf.SetFont("Arial", "", 9)
-	pdf.SetXY(45, 26)
-	pdf.MultiCell(80, 4, utf8ToLatin1("CRM Reservas Tours y Facturación\nPailas, Guanacaste, Costa Rica\nTel: +506 8888-8888   |   Email: info@rioperdido.com"), "", "L", false)
-	
-	// Restaurar color negro para el resto del documento
-	pdf.SetTextColor(0, 0, 0)
+// --- Encabezado de la Empresa con diseño profesional ---
+pdf.SetFillColor(155, 144, 123) // Beige profesional
+pdf.Rect(10, 10, 190, 35, "F")
+
+// --- Logo de la empresa ---
+logoPath := "C:/Users/jenif/Downloads/I Ciclo 2025/Implementacion de Bases de Datos/Proyecto/ProyectoFinal/ProyectoBases/ProyectoBD/ProyectoProgramado/utils/images/factura_logo/logitoFactura.png"
+
+// Logo más grande (ancho 45 mm, centrado verticalmente)
+pdf.ImageOptions(
+	logoPath,
+	15, 18, // X, Y → un poco más arriba
+	48, 0,  // ancho 45 mm, alto proporcional
+	false,
+	gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
+	0,
+	"",
+)
+
+// --- Información de la empresa ---
+pdf.SetTextColor(255, 255, 255)
+pdf.SetFont("Arial", "B", 16)
+pdf.SetXY(65, 18) // movido a la derecha (antes estaba en 45)
+pdf.Cell(0, 8, utf8ToLatin1("Río Perdido Tours"))
+
+pdf.SetFont("Arial", "", 9)
+pdf.SetXY(65, 26) // también movido a la derecha
+pdf.MultiCell(80, 4, utf8ToLatin1(
+	"CRM Reservas Tours y Facturación\nBagaces, Guanacaste, Costa Rica\nTel: +506 2673-3605\nEmail: info@rioperdido.com",
+), "", "L", false)
+
+// Restaurar color negro
+pdf.SetTextColor(0, 0, 0)
+
 
 	// --- Sección de Factura (parte superior derecha) ---
 	// Fondo blanco para la sección de factura
@@ -62,7 +70,7 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.Rect(130, 15, 70, 30, "F")
 	
 	// Título FACTURA con estilo
-	pdf.SetTextColor(41, 128, 185)
+	pdf.SetTextColor(155, 144, 123)
 	pdf.SetFont("Arial", "B", 24)
 	pdf.SetXY(140, 18)
 	pdf.Cell(0, 8, "FACTURA")
@@ -82,7 +90,7 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 
 	// --- Información del Cliente con diseño elegante ---
 	// Línea separadora con color
-	pdf.SetDrawColor(41, 128, 185)
+	pdf.SetDrawColor(155, 144, 123)
 	pdf.SetLineWidth(0.5)
 	pdf.Line(10, 52, 200, 52)
 	
@@ -91,7 +99,7 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.Rect(10, 55, 190, 20, "F")
 	
 	// Título "Facturar a"
-	pdf.SetTextColor(41, 128, 185)
+	pdf.SetTextColor(155, 144, 123)
 	pdf.SetFont("Arial", "B", 12)
 	pdf.SetXY(15, 58)
 	pdf.Cell(0, 6, utf8ToLatin1("Facturar a:"))
@@ -114,14 +122,14 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.SetY(85) // Más espacio después del cliente
 	
 	// Configurar colores y bordes para la tabla
-	pdf.SetDrawColor(41, 128, 185) // Bordes azules
+	pdf.SetDrawColor(155, 144, 123) // Bordes azules
 	pdf.SetLineWidth(0.3)
 	
 	// Anchos de columna ajustados sin ubicación (suman 190mm)
 	wDesc, wCant, wUnit, wDescVal, wSub := 90.0, 20.0, 30.0, 25.0, 25.0
 
 	// Encabezado de la tabla con estilo
-	pdf.SetFillColor(41, 128, 185) // Fondo azul
+	pdf.SetFillColor(155, 144, 123) // Fondo azul
 	pdf.SetTextColor(255, 255, 255) // Texto blanco
 	pdf.SetFont("Arial", "B", 10)
 	
@@ -153,7 +161,7 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 
 		// CORRECCIÓN: Usar USD $
 		pdf.CellFormat(wUnit, 8, fmt.Sprintf("USD $%.2f", item.PrecioTour), "LR", 0, "R", true, 0, "")
-		pdf.CellFormat(wDescVal, 8, fmt.Sprintf("USD $%.2f", item.Descuento), "LR", 0, "R", true, 0, "")
+		pdf.CellFormat(wDescVal, 8, fmt.Sprintf("%.0f%%", item.Descuento), "LR", 0, "R", true, 0, "")
 		
 		// El SubTotal viene calculado desde la base de datos como: (cantidad × precio) - descuento
 		pdf.CellFormat(wSub, 8, fmt.Sprintf("USD $%.2f", item.SubTotal), "LR", 1, "R", true, 0, "")
@@ -175,7 +183,7 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.Rect(totalsStartX, totalsY-5, totalsWidth, 40, "F")
 	
 	// Borde azul
-	pdf.SetDrawColor(41, 128, 185)
+	pdf.SetDrawColor(155, 144, 123)
 	pdf.SetLineWidth(1)
 	pdf.Rect(totalsStartX, totalsY-5, totalsWidth, 40, "D")
 	
@@ -198,13 +206,13 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.CellFormat(23, 7, formatCurrency(ivaAmount), "", 0, "R", false, 0, "")
 
 	// Línea separadora antes del total
-	pdf.SetDrawColor(41, 128, 185)
+	pdf.SetDrawColor(155, 144, 123)
 	pdf.SetLineWidth(0.5)
 	pdf.Line(totalsStartX+2, totalsY+14, totalsStartX+totalsWidth-2, totalsY+14)
 
 	// Total Final - Label alineado con columna Descuento, valor alineado con columna Subtotal
 	// Fondo azul para destacar el total
-	pdf.SetFillColor(41, 128, 185)
+	pdf.SetFillColor(155, 144, 123)
 	pdf.Rect(totalsStartX+2, totalsY+16, totalsWidth-4, 12, "F")
 	
 	// Texto blanco para el total con mejor espaciado
@@ -220,17 +228,20 @@ func GenerateInvoicePDF(facturaData *dto.GetFacturaByIdRow, detallesData []dto.D
 	pdf.SetFillColor(255, 255, 255)
 
 	// --- Pie de Página compacto para una página ---
-	// Solo una línea decorativa y texto mínimo
-	pdf.SetY(-15)
-	pdf.SetDrawColor(41, 128, 185)
-	pdf.SetLineWidth(0.5)
-	pdf.Line(10, pdf.GetY(), 200, pdf.GetY())
+	pdf.SetAutoPageBreak(false, 0) // evita salto automático por márgenes
+	footerY := 285.0               // posición fija segura (A4 = 297mm de alto)
+	pdf.SetY(footerY)
 	
-	// Texto del pie de página compacto
-	pdf.SetTextColor(41, 128, 185)
+	// Línea decorativa
+	pdf.SetDrawColor(155, 144, 123)
+	pdf.SetLineWidth(0.4)
+	pdf.Line(10, footerY, 200, footerY)
+	
+	// Texto centrado justo encima de la línea
+	pdf.SetTextColor(78, 72, 62)
 	pdf.SetFont("Arial", "", 8)
-	pdf.SetY(-12)
-	pdf.CellFormat(0, 4, utf8ToLatin1("Esta factura es un comprobante de pago • ¡Gracias por su confianza en Río Perdido Tours!"), "", 0, "C", false, 0, "")
+	pdf.SetY(footerY + 2)
+	pdf.CellFormat(0, 4, utf8ToLatin1("Esta factura es un comprobante de pago ¡Gracias por su confianza en Río Perdido!"), "", 0, "C", false, 0, "")
 	
 	// Restaurar color negro
 	pdf.SetTextColor(0, 0, 0)
