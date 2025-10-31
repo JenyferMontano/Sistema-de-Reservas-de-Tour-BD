@@ -1,0 +1,3 @@
+sqlserver://adminJanis:Jeny2005@jeny-server.database.windows.net?database=reservas_tour 
+
+ESTO VA EN EL DB_SOURCE= ENV
