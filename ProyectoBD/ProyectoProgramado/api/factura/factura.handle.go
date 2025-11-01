@@ -35,7 +35,6 @@ func (h *Handler) CreateFacturaHandler(ctx *gin.Context) {
 		return
 	}
 
-	// Validación básica
 	if req.Persona == 0 || req.Reserva == 0 || req.EstadoFactura == "" || req.MetodoPago == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Faltan campos obligatorios"})
 		return
@@ -79,38 +78,24 @@ func (h *Handler) CreateFacturaHandler(ctx *gin.Context) {
 		return
 	}
 
-	// Construir el objeto de la factura que el frontend necesita (sin tener que llamar a GetFacturaById)
-// NOTA: Usamos idfactura en minúsculas para asegurar la compatibilidad con el modelo de Angular.
 facturaRespuesta := gin.H{
-    "idfactura":    idFactura, // Clave para Angular: response.factura.idfactura
+    "idfactura":    idFactura,
     "persona":      req.Persona,
     "reserva":      req.Reserva,
-    "estadofactura": "Facturada", // Usamos el estado final
+    "estadofactura": "Facturada", 
     "metodopago":   req.MetodoPago,
     "iva":          req.Iva,
     "subtotal":     req.Subtotal,
-    // NOTA: El total calculado por el PA NO está aquí, ya que no se devuelve en CreateFactura.
-    // Si necesitas el Total, DEBES llamar a GetFacturaById (o modificar el PA para devolverlo).
     "fechafactura": now, 
 }
 
 // 5. DEVOLVER LA ESTRUCTURA FINAL
 ctx.JSON(http.StatusOK, gin.H{
     "mensaje":      "Factura creada y detalles migrados correctamente",
-    "factura":      facturaRespuesta, // El objeto anidado que Angular espera
-    "detalles":     detalles,         // Los detalles al mismo nivel de la respuesta
+    "factura":      facturaRespuesta, 
+    "detalles":     detalles,        
 })
-/*
-	ctx.JSON(http.StatusOK, gin.H{
-		"mensaje":      "Factura creada y detalles migrados correctamente",
-		"idFactura":    idFactura,
-		"detalles":     detalles,
-		"idReserva":    req.Reserva,
-		"idPersona":    req.Persona,
-		"estado":       "Facturada",
-		"metodoPago":   req.MetodoPago,
-		"fechaFactura": now,
-	})*/
+
 }
 
 // Obtener todas las facturas
@@ -162,7 +147,9 @@ func (h *Handler) UpdateFacturaEstado(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Estado de la factura actualizado correctamente"})
 }
 
+
 // Eliminar factura
+/*
 func (h *Handler) DeleteFactura(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -186,18 +173,7 @@ func (h *Handler) DeleteFactura(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Factura eliminada correctamente"})
-}
-
-// Obtener facturas por usuario
-/*func (h *Handler) GetFacturasByUsuario(ctx *gin.Context) {
-	usuario := ctx.Param("usuario")
-	facturas, err := dto.GetFacturasByUsuario(h.db, usuario)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al consultar facturas del usuario"})
-		return
-	}
-	ctx.JSON(http.StatusOK, facturas)
-} */
+}*/
 
 // Obtener facturas por persona
 func (h *Handler) GetFacturasByPersona(ctx *gin.Context) {
@@ -236,7 +212,6 @@ func (h *Handler) GetFacturaByReserva(ctx *gin.Context) {
 }
 
 func (h *Handler) GetFacturaPDF(ctx *gin.Context) {
-	// 1. Obtener el ID de la factura desde la URL
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -245,7 +220,6 @@ func (h *Handler) GetFacturaPDF(ctx *gin.Context) {
 	}
 	idFactura := int32(id)
 
-	// 2. Obtener los datos de la factura y sus detalles desde la BD
 	facturaData, err := dto.GetFacturaById(h.db, idFactura)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -262,18 +236,15 @@ func (h *Handler) GetFacturaPDF(ctx *gin.Context) {
 		return
 	}
 
-	// 3. Generar el PDF usando la función que creamos
 	pdf, err := GenerateInvoicePDF(facturaData, detallesData)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error al generar el PDF: " + err.Error()})
 		return
 	}
 
-	// 4. Configurar las cabeceras HTTP para la descarga del PDF
 	ctx.Header("Content-Type", "application/pdf")
 	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"factura-%06d.pdf\"", idFactura))
 
-	// 5. Enviar el PDF como respuesta
 	if err := pdf.Output(ctx.Writer); err != nil {
 		// Loguear el error internamente, ya no se puede enviar una respuesta JSON
 		fmt.Printf("Error al escribir el PDF en la respuesta: %v\n", err)

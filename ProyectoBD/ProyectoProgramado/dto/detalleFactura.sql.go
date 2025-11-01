@@ -5,63 +5,6 @@ import (
 	"fmt"
 )
 
-/*
-type CreateDetalleFacturaParams struct {
-	Factura        int32   `json:"factura"`
-	Tour           int32   `json:"tour"`
-	CantTour       int32   `json:"cantTour"`
-	PrecioTour     float64 `json:"precioTour"`
-	Descuento      float64 `json:"descuento"`
-	DetalleReserva *int32  `json:"detalleReserva,omitempty"`
-}
-
-func CreateDetalleFactura(db *sql.DB, p CreateDetalleFacturaParams) (int32, error) {
-	var idDetalleFactura int32
-
-	err := db.QueryRow(
-		"EXEC pa_detallefactura_insert @factura=@factura, @tour=@tour, @cantTour=@cantTour, @precioTour=@precioTour, @descuento=@descuento, @detalleReserva=@detalleReserva",
-		sql.Named("factura", p.Factura),
-		sql.Named("tour", p.Tour),
-		sql.Named("cantTour", p.CantTour),
-		sql.Named("precioTour", p.PrecioTour),
-		sql.Named("descuento", p.Descuento),
-		sql.Named("detalleReserva", p.DetalleReserva),
-	).Scan(&idDetalleFactura)
-
-	if err != nil {
-		return 0, fmt.Errorf("error al crear detalle factura: %w", err)
-	}
-
-	return idDetalleFactura, nil
-}
-
-type UpdateDetalleFacturaParams struct {
-	IdDetalleFactura int32   `json:"idDetalleFactura"`
-	Tour             int32   `json:"tour"`
-	CantTour         int32   `json:"cantTour"`
-	PrecioTour       float64 `json:"precioTour"`
-	Descuento        float64 `json:"descuento"`
-	DetalleReserva   *int32  `json:"detalleReserva,omitempty"`
-}
-
-func UpdateDetalleFactura(db *sql.DB, p UpdateDetalleFacturaParams) error {
-	_, err := db.Exec(
-		"EXEC pa_detallefactura_update @idDetalleFactura=@idDetalleFactura, @tour=@tour, @cantTour=@cantTour, @precioTour=@precioTour, @descuento=@descuento, @detalleReserva=@detalleReserva",
-		sql.Named("idDetalleFactura", p.IdDetalleFactura),
-		sql.Named("tour", p.Tour),
-		sql.Named("cantTour", p.CantTour),
-		sql.Named("precioTour", p.PrecioTour),
-		sql.Named("descuento", p.Descuento),
-		sql.Named("detalleReserva", p.DetalleReserva),
-	)
-
-	if err != nil {
-		return fmt.Errorf("error al actualizar detalle factura: %w", err)
-	}
-	return nil
-}
-*/
-
 type DetalleFacturaAllRows struct {
 	IdDetalleFactura int32   `json:"idDetalleFactura"`
 	Factura          int32   `json:"factura"`
@@ -157,15 +100,7 @@ func GetDetalleFacturaByFactura(db *sql.DB, idFactura int32) ([]DetalleFacturaBy
 	return detalles, nil
 }
 
-func DeleteDetalleFactura(db *sql.DB, idDetalleFactura int32) error {
-	_, err := db.Exec("EXEC pa_detallefactura_delete @iddetallefactura=@iddetallefactura",
-		sql.Named("iddetallefactura", idDetalleFactura))
-	if err != nil {
-		return fmt.Errorf("error al eliminar detalle factura: %w", err)
-	}
-	return nil
-}
-
+/*
 func DeleteDetalleFacturaByFactura(db *sql.DB, idFactura int32) error {
 	_, err := db.Exec("EXEC pa_detallefactura_deleteByFactura @idFactura=@idFactura",
 		sql.Named("idFactura", idFactura))
@@ -174,6 +109,7 @@ func DeleteDetalleFacturaByFactura(db *sql.DB, idFactura int32) error {
 	}
 	return nil
 }
+*/
 
 func MigrateDetalleReservaToDetalleFactura(db *sql.DB, idFactura, idReserva int32) error {
 	_, err := db.Exec("EXEC pa_migrar_detalleReserva_detalleFactura @idFactura=@idFactura, @idReserva=@idReserva",
