@@ -52,7 +52,7 @@ func UpdateFacturaEstado(db *sql.DB, f UpdateFacturaEstadoParams) error {
 	)
 	return err
 }
-
+/*
 func DeleteFactura(db *sql.DB, idFactura int32) error {
 	_, err := db.Exec(
 		"EXEC pa_factura_delete @idFactura=@idFactura",
@@ -62,7 +62,7 @@ func DeleteFactura(db *sql.DB, idFactura int32) error {
 		return fmt.Errorf("no se pudo eliminar la factura: %w", err)
 	}
 	return nil
-}
+}*/
 
 type FacturaBaseRows struct {
 	IDFactura     int32     `json:"idFactura"`

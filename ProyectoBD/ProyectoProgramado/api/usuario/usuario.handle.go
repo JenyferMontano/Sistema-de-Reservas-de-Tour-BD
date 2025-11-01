@@ -139,67 +139,6 @@ func (h *Handler) UpdateUsuario(ctx *gin.Context) {
 
 }
 
-/*
-// Actualizar contraseña  e imagen de usuario
-type updateUsuarioRequest struct {
-	Password string  `json:"password"`
-	Image    *string `json:"image"`
-}
-
-type updateUsuarioUri struct {
-	Username string `uri:"username" binding:"required"`
-}
-
-func (h *Handler) UpdateUsuario(ctx *gin.Context) {
-	var uri updateUsuarioUri
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	var req updateUsuarioRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	userActual, err := dto.GetUsuarioByUserName(h.db, uri.Username)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	passwordToUpdate := req.Password
-	if passwordToUpdate == "" {
-		passwordToUpdate = userActual.Password
-	}
-	var image sql.NullString
-	if req.Image != nil && *req.Image != "" {
-		image = sql.NullString{String: *req.Image, Valid: true}
-		if userActual.Image.Valid && userActual.Image.String != *req.Image {
-			oldImagePath := filepath.Join("utils/images/usuarios", userActual.Image.String)
-			if err := os.Remove(oldImagePath); err != nil && !os.IsNotExist(err) {
-				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo eliminar la imagen anterior"})
-				return
-			}
-		}
-	} else {
-		image = userActual.Image
-	}
-	usuario := dto.Usuario{
-		Username:  uri.Username,
-		Password:  passwordToUpdate,
-		Rol:       userActual.Rol,
-		Idpersona: userActual.Idpersona,
-		Image:     image,
-	}
-	err = dto.UpdateUsuario(h.db, usuario)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Usuario actualizado exitosamente!"})
-
-}
-
-*/
 
 // Buscar por username
 type usuarioResponse struct {
@@ -321,9 +260,8 @@ func (h *Handler) Login(ctx *gin.Context) {
 		return
 	}
 
-	// Check if this is a SQL Server user
+	//Verificar si es un usuario de SQL Server
 	if h.sqlServerAuth.IsSQLServerUser(req.Email) {
-		// Handle SQL Server user authentication
 		username := h.sqlServerAuth.ExtractUsernameFromEmail(req.Email)
 		sqlUser, err := h.sqlServerAuth.AuthenticateSQLServerUser(username, req.Password)
 		if err != nil {
@@ -331,7 +269,6 @@ func (h *Handler) Login(ctx *gin.Context) {
 			return
 		}
 
-		// Create token for SQL Server user
 		accessToken, err := h.tokenBuilder.CreateToken(sqlUser.Username, sqlUser.Email, sqlUser.Role, h.tokenDuration)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -343,17 +280,16 @@ func (h *Handler) Login(ctx *gin.Context) {
 			User: userResponse{
 				UserName: sqlUser.Username,
 				Role:     sqlUser.Role,
-				Image:    nil, // SQL Server users don't have images
+				Image:    nil, 
 			},
 		}
 
-		// Add user information to context for audit middleware
 		ctx.Set("login_user", sqlUser.Username)
 		ctx.JSON(http.StatusOK, resp)
 		return
 	}
 
-	// Handle application user authentication (existing logic)
+	//Verificar si es un usuario de la aplicación
 	user, err := dto.GetUsuarioByCorreo(h.db, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -384,7 +320,7 @@ func (h *Handler) Login(ctx *gin.Context) {
 			Image:    image,
 		},
 	}
-	// Add user information to context for audit middleware
+	//Agregar información del usuario al contexto para el middleware de auditoría
 	ctx.Set("login_user", user.Username)
 	ctx.JSON(http.StatusOK, resp)
 }

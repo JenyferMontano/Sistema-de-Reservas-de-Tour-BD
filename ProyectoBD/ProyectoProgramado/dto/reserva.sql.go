@@ -228,36 +228,6 @@ func GetReservasByPersona(db *sql.DB, huesped int32) ([]GetReservasByPersonaRow,
 	return reservas, nil
 }
 
-/*
-type UpdateReservaParams struct {
-	Numreserva    int32     `json:"numreserva"`
-	Usuario       string    `json:"usuario"`
-	Huesped       int32     `json:"huesped"`
-	Estadoreserva string    `json:"estadoreserva"`
-	Fechareserva  time.Time `json:"fechareserva"`
-	Subtotal      float64   `json:"subtotal"`
-	Impuesto      float64   `json:"impuesto"`
-	Total         float64   `json:"total"`
-}
-
-func UpdateReserva(db *sql.DB, r UpdateReservaParams) error {
-	fechaStr := r.Fechareserva.Format("2006-01-02 15:04:05")
-
-	_, err := db.Exec(
-		"EXEC pa_reserva_update @numReserva=@id, @usuario=@usuario, @huesped=@huesped, @estadoReserva=@estado, @fechaReservaStr=@fecha, @subTotal=@subtotal, @impuesto=@impuesto, @total=@total",
-		sql.Named("id", r.Numreserva),
-		sql.Named("usuario", r.Usuario),
-		sql.Named("huesped", r.Huesped),
-		sql.Named("estado", r.Estadoreserva),
-		sql.Named("fecha", fechaStr),
-		sql.Named("subtotal", r.Subtotal),
-		sql.Named("impuesto", r.Impuesto),
-		sql.Named("total", r.Total),
-	)
-	return err
-}
-	*/
-
 type UpdateReservaEstadoParams struct {
 	Numreserva    int32  `json:"numreserva"`
 	Estadoreserva string `json:"estadoreserva"`
