@@ -125,6 +125,8 @@ CREATE TABLE detallefactura (
 );
 
 -- Tablas de Auditoría
+-- Orden: Primero las tablas independientes, luego las que tienen FK hacia ellas
+
 CREATE TABLE auditoria_sesiones (
     idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
     userName NVARCHAR(25) NOT NULL,
@@ -139,17 +141,15 @@ CREATE TABLE auditoria_sesiones (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE auditoria_operaciones (
-    idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE sesiones (
+    sessionID NVARCHAR(255) PRIMARY KEY,
     userName NVARCHAR(25) NOT NULL,
-    tablaAfectada NVARCHAR(50) NOT NULL,
-    operacion NVARCHAR(10) NOT NULL, -- 'INSERT', 'UPDATE', 'DELETE'
-    registroId INT NOT NULL,
-    valoresAnteriores NVARCHAR(MAX) NULL,
-    valoresNuevos NVARCHAR(MAX) NULL,
-    fechaOperacion DATETIME NOT NULL DEFAULT GETDATE(),
+    fechaInicio DATETIME NOT NULL DEFAULT GETDATE(),
+    fechaFin DATETIME NULL,
     ipAddress NVARCHAR(45) NOT NULL,
-    CONSTRAINT FK_auditoria_operaciones_usuario FOREIGN KEY (userName)
+    userAgent NVARCHAR(255) NULL,
+    estado NVARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
+    CONSTRAINT FK_sesiones_usuario FOREIGN KEY (userName)
         REFERENCES usuario (userName)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -170,16 +170,28 @@ CREATE TABLE auditoria_accesos (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE sesiones (
-    sessionID NVARCHAR(255) PRIMARY KEY,
-    userName NVARCHAR(25) NOT NULL,
-    fechaInicio DATETIME NOT NULL DEFAULT GETDATE(),
-    fechaFin DATETIME NULL,
+CREATE TABLE auditoria_operaciones (
+    idAuditoria INT IDENTITY(1,1) PRIMARY KEY,
+    userName NVARCHAR(25) NULL,
+    tablaAfectada NVARCHAR(50) NOT NULL,
+    operacion NVARCHAR(10) NOT NULL, 
+    valoresAnteriores NVARCHAR(MAX) NULL,
+    valoresNuevos NVARCHAR(MAX) NULL,
+    fechaOperacion DATETIME NOT NULL DEFAULT GETDATE(),
     ipAddress NVARCHAR(45) NOT NULL,
-    userAgent NVARCHAR(255) NULL,
-    estado NVARCHAR(20) NOT NULL DEFAULT 'ACTIVA',
-    CONSTRAINT FK_sesiones_usuario FOREIGN KEY (userName)
-        REFERENCES usuario (userName)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    registroId NVARCHAR(255) NOT NULL,
+    resultado NVARCHAR(10) NULL, 
+    sessionID NVARCHAR(255) NULL,
+    idAcceso INT NULL,
+
+    CONSTRAINT FK_auditoria_operaciones_sesion FOREIGN KEY (sessionID)
+        REFERENCES sesiones (sessionID)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+    CONSTRAINT FK_auditoria_operaciones_acceso FOREIGN KEY (idAcceso)
+        REFERENCES auditoria_accesos (idAuditoria)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT CK_auditoria_operaciones_operacion CHECK (operacion IN ('INSERT', 'UPDATE', 'DELETE')),
+    CONSTRAINT CK_auditoria_operaciones_resultado CHECK (resultado IS NULL OR resultado IN ('EXITOSO', 'FALLIDO', 'PENDIENTE'))
 );

@@ -1,3 +1,60 @@
+-- =============================================
+-- FUNCIÓN HELPER PARA OBTENER USUARIO EJECUTOR
+-- =============================================
+-- Esta función obtiene el usuario que ejecutó la operación junto con:
+-- - executorUserName: Usuario que ejecutó la operación
+-- - sessionID: ID de la sesión activa del usuario ejecutor
+-- - idAcceso: ID del último acceso del usuario ejecutor
+-- 
+-- Lógica:
+-- 1. Primero intenta obtener el usuario de SESSION_CONTEXT (establecido desde Go)
+-- 2. Si no está disponible, usa la sesión activa más reciente como fallback
+-- 3. Obtiene sessionID e idAcceso relacionados con el usuario ejecutor
+-- =============================================
+IF OBJECT_ID('fn_get_user_executor', 'FN') IS NOT NULL
+    DROP FUNCTION fn_get_user_executor;
+GO
+
+CREATE FUNCTION fn_get_user_executor()
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT TOP 1
+        COALESCE(ctx.executorUserName, s.userName, 'anonymous') AS executorUserName,
+        s.sessionID,
+        a.idAuditoria AS idAcceso
+    FROM (
+        -- Primero intentar obtener de SESSION_CONTEXT
+        SELECT 
+            CAST(SESSION_CONTEXT(N'executor_user') AS NVARCHAR(25)) AS executorUserName
+    ) ctx
+    OUTER APPLY (
+        -- Si hay SESSION_CONTEXT, buscar sesión de ese usuario, sino la más reciente
+        SELECT TOP 1 
+            userName,
+            sessionID
+        FROM sesiones
+        WHERE estado = 'ACTIVA'
+            AND (ctx.executorUserName IS NULL OR userName = ctx.executorUserName)
+        ORDER BY 
+            CASE WHEN ctx.executorUserName IS NOT NULL AND userName = ctx.executorUserName THEN 0 ELSE 1 END,
+            fechaInicio DESC
+    ) s
+    OUTER APPLY (
+        -- Obtener el último acceso del usuario ejecutor
+        SELECT TOP 1 idAuditoria
+        FROM auditoria_accesos
+        WHERE userName = COALESCE(ctx.executorUserName, s.userName)
+        ORDER BY fechaAcceso DESC
+    ) a
+);
+GO
+
+-- =============================================
+-- TRIGGERS DE AUDITORÍA
+-- =============================================
+
 -- Trigger para insert y update (after) usuarios
 if exists (select * from sys.triggers where name = 'dis_auditoria_usuarios_Insert_Update')
     drop trigger dis_auditoria_usuarios_Insert_Update;
@@ -14,11 +71,23 @@ begin
     declare @valoresAnteriores nvarchar(max)
     declare @valoresNuevos nvarchar(max)
     declare @ipAddress nvarchar(45) = '127.0.0.1'
+    
+    -- Variables para el usuario ejecutor y sus relaciones
+    declare @userNameEjecutor nvarchar(25)
+    declare @sessionID nvarchar(255)
+    declare @idAcceso int
 
     if exists (select * from inserted) and exists (select * from deleted)
         set @operacion = 'UPDATE'
     else
         set @operacion = 'INSERT'
+
+    -- Obtener el usuario ejecutor, sessionID e idAcceso una vez para todos los registros
+    SELECT TOP 1
+        @userNameEjecutor = executorUserName,
+        @sessionID = sessionID,
+        @idAcceso = idAcceso
+    FROM fn_get_user_executor()
 
     declare insert_cursor cursor for
     select userName from inserted
@@ -51,8 +120,18 @@ begin
             set @valoresAnteriores = 'REGISTRO_NUEVO'
         end
 
-        insert into auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-        values (@userName, 'usuario', @operacion, 0, @valoresAnteriores, @valoresNuevos, @ipAddress)
+        -- Registrar auditoría con el usuario EJECUTOR (no el del registro afectado)
+        -- Incluye sessionID e idAcceso para trazabilidad completa
+        insert into auditoria_operaciones (
+            userName, tablaAfectada, operacion, valoresAnteriores, valoresNuevos, 
+            fechaOperacion, ipAddress, registroId, resultado,
+            sessionID, idAcceso
+        )
+        values (
+            @userNameEjecutor, 'usuario', @operacion, @valoresAnteriores, @valoresNuevos, 
+            GETDATE(), @ipAddress, @registroId, 'EXITOSO',
+            @sessionID, @idAcceso
+        )
         
         fetch next from insert_cursor into @userName
     end
@@ -75,6 +154,16 @@ begin
     declare @userName nvarchar(25)
     declare @valoresAnteriores nvarchar(max)
     declare @ipAddress nvarchar(45) = '127.0.0.1'
+    declare @userNameEjecutor nvarchar(25)
+    declare @sessionID nvarchar(255)
+    declare @idAcceso int
+    
+    -- Obtener el usuario ejecutor, sessionID e idAcceso una vez para todos los registros
+    SELECT TOP 1
+        @userNameEjecutor = executorUserName,
+        @sessionID = sessionID,
+        @idAcceso = idAcceso
+    FROM fn_get_user_executor()
     
     declare delete_cursor cursor for
     select userName from deleted
@@ -84,6 +173,7 @@ begin
     
     while @@fetch_status = 0
     begin
+        
         select @valoresAnteriores = 
             'userName: ' + userName + 
             ', idPersona: ' + cast(idPersona as nvarchar) + 
@@ -91,12 +181,21 @@ begin
             ', image: ' + isnull(image, 'NULL')
         from deleted where userName = @userName
         
-        alter table auditoria_operaciones nocheck constraint FK_auditoria_operaciones_usuario
-        
-        insert into auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-        values (@userName, 'usuario', 'DELETE', 0, @valoresAnteriores, null, @ipAddress)
-        
-        alter table auditoria_operaciones check constraint FK_auditoria_operaciones_usuario
+        declare @registroId nvarchar(25)
+        set @registroId = @userName
+
+        -- Registrar auditoría con el usuario EJECUTOR (no el del registro afectado)
+        -- Incluye sessionID e idAcceso para trazabilidad completa
+        insert into auditoria_operaciones (
+            userName, tablaAfectada, operacion, valoresAnteriores, valoresNuevos, 
+            fechaOperacion, ipAddress, registroId, resultado,
+            sessionID, idAcceso
+        )
+        values (
+            @userNameEjecutor, 'usuario', 'DELETE', @valoresAnteriores, null, 
+            GETDATE(), @ipAddress, @registroId, 'EXITOSO',
+            @sessionID, @idAcceso
+        )
         
         fetch next from delete_cursor into @userName
     end
@@ -105,6 +204,7 @@ begin
     deallocate delete_cursor
 end
 go
+
 
 
 -- Trigger para auditoría de facturas 
@@ -118,21 +218,31 @@ after insert
 as
 begin
     declare @registroId int
-    declare @userName nvarchar(25)
+    declare @registroIdStr nvarchar(255)
     declare @valoresNuevos nvarchar(max)
     declare @ipAddress nvarchar(45) = '127.0.0.1'
+    declare @userNameEjecutor nvarchar(25)
+    declare @sessionID nvarchar(255)
+    declare @idAcceso int
+
+    -- Obtener el usuario ejecutor, sessionID e idAcceso una vez para todos los registros
+    SELECT TOP 1
+        @userNameEjecutor = executorUserName,
+        @sessionID = sessionID,
+        @idAcceso = idAcceso
+    FROM fn_get_user_executor()
 
     declare insert_cursor cursor for
-    select f.idFactura, u.userName
-    from inserted f
-    inner join reserva r on f.reserva = r.numReserva
-    inner join usuario u on r.usuario = u.userName
+    select idFactura from inserted
 
     open insert_cursor
-    fetch next from insert_cursor into @registroId, @userName
+    fetch next from insert_cursor into @registroId
 
     while @@fetch_status = 0
     begin
+        
+        set @registroIdStr = cast(@registroId as nvarchar(255))
+        
         select @valoresNuevos = 
             'idFactura: ' + cast(idFactura as nvarchar) + 
             ', persona: ' + cast(persona as nvarchar) + 
@@ -145,10 +255,20 @@ begin
             ', total: ' + cast(total as nvarchar)
         from inserted where idFactura = @registroId
 
-        insert into auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-        values (@userName, 'factura', 'INSERT', @registroId, 'REGISTRO_NUEVO', @valoresNuevos, @ipAddress)
+        -- Registrar auditoría con el usuario EJECUTOR (no el del registro afectado)
+        -- Incluye sessionID e idAcceso para trazabilidad completa
+        insert into auditoria_operaciones (
+            userName, tablaAfectada, operacion, valoresAnteriores, valoresNuevos, 
+            fechaOperacion, ipAddress, registroId, resultado,
+            sessionID, idAcceso
+        )
+        values (
+            @userNameEjecutor, 'factura', 'INSERT', 'REGISTRO_NUEVO', @valoresNuevos, 
+            GETDATE(), @ipAddress, @registroIdStr, 'EXITOSO',
+            @sessionID, @idAcceso
+        )
 
-        fetch next from insert_cursor into @registroId, @userName
+        fetch next from insert_cursor into @registroId
     end
 
     close insert_cursor
@@ -167,18 +287,31 @@ after insert
 as
 begin
     declare @registroId int
-    declare @userName nvarchar(25)
+    declare @registroIdStr nvarchar(255)
     declare @valoresNuevos nvarchar(max)
     declare @ipAddress nvarchar(45) = '127.0.0.1'
+    declare @userNameEjecutor nvarchar(25)
+    declare @sessionID nvarchar(255)
+    declare @idAcceso int
+
+    -- Obtener el usuario ejecutor, sessionID e idAcceso una vez para todos los registros
+    SELECT TOP 1
+        @userNameEjecutor = executorUserName,
+        @sessionID = sessionID,
+        @idAcceso = idAcceso
+    FROM fn_get_user_executor()
 
     declare insert_cursor cursor for
-    select numReserva, usuario from inserted
+    select numReserva from inserted
 
     open insert_cursor
-    fetch next from insert_cursor into @registroId, @userName
+    fetch next from insert_cursor into @registroId
 
     while @@fetch_status = 0
     begin
+        
+        set @registroIdStr = cast(@registroId as nvarchar(255))
+        
         select @valoresNuevos = 
             'numReserva: ' + cast(numReserva as nvarchar) + 
             ', usuario: ' + usuario + 
@@ -190,10 +323,20 @@ begin
             ', total: ' + cast(total as nvarchar)
         from inserted where numReserva = @registroId
 
-        insert into auditoria_operaciones (userName, tablaAfectada, operacion, registroId, valoresAnteriores, valoresNuevos, ipAddress)
-        values (@userName, 'reserva', 'INSERT', @registroId, 'REGISTRO_NUEVO', @valoresNuevos, @ipAddress)
+        -- Registrar auditoría con el usuario EJECUTOR (no el del registro afectado)
+        -- Incluye sessionID e idAcceso para trazabilidad completa
+        insert into auditoria_operaciones (
+            userName, tablaAfectada, operacion, valoresAnteriores, valoresNuevos, 
+            fechaOperacion, ipAddress, registroId, resultado,
+            sessionID, idAcceso
+        )
+        values (
+            @userNameEjecutor, 'reserva', 'INSERT', 'REGISTRO_NUEVO', @valoresNuevos, 
+            GETDATE(), @ipAddress, @registroIdStr, 'EXITOSO',
+            @sessionID, @idAcceso
+        )
 
-        fetch next from insert_cursor into @registroId, @userName
+        fetch next from insert_cursor into @registroId
     end
 
     close insert_cursor
