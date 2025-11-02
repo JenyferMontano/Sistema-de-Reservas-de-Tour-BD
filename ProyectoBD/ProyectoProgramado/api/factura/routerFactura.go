@@ -17,6 +17,5 @@ func RegisterRoutes(rg *gin.RouterGroup, db *sql.DB, tokenBuilder security.Build
 	rg.GET("/reserva/:reserva", h.GetFacturaByReserva)
 	rg.GET("/:id/pdf", h.GetFacturaPDF)
 	rg.PUT("/estado", h.UpdateFacturaEstado)
-	rg.DELETE("/:id", h.DeleteFactura)
 
 }
