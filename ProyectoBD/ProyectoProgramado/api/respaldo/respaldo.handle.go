@@ -33,7 +33,6 @@ func (h *Handler) CrearRespaldo(ctx *gin.Context) {
 		return
 	}
 
-	// Obtener información del usuario autenticado
 	authorized, exists := ctx.Get("authorized")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -50,7 +49,6 @@ func (h *Handler) CrearRespaldo(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar que el usuario tenga rol de DBA
 	if payload.Rol != "DBA" {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"error": "Acceso denegado: Se requieren permisos de DBA",
@@ -58,7 +56,6 @@ func (h *Handler) CrearRespaldo(ctx *gin.Context) {
 		return
 	}
 
-	// Llamar a la función del archivo .sql.go
 	resultado, err := dto.CrearRespaldo(h.db, req.RutaRespaldo, payload.Username, req.Descripcion)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -68,7 +65,6 @@ func (h *Handler) CrearRespaldo(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar si el resultado indica error
 	if resultado.Resultado == "ERROR" {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": resultado.MensajeError,
@@ -80,7 +76,6 @@ func (h *Handler) CrearRespaldo(ctx *gin.Context) {
 		return
 	}
 
-	// Respuesta exitosa
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": resultado,
@@ -98,7 +93,6 @@ func (h *Handler) RestaurarBaseDatos(ctx *gin.Context) {
 		return
 	}
 
-	// Obtener información del usuario autenticado
 	authorized, exists := ctx.Get("authorized")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -115,7 +109,6 @@ func (h *Handler) RestaurarBaseDatos(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar que el usuario tenga rol de DBA
 	if payload.Rol != "DBA" {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"error": "Acceso denegado: Se requieren permisos de DBA",
@@ -123,7 +116,6 @@ func (h *Handler) RestaurarBaseDatos(ctx *gin.Context) {
 		return
 	}
 
-	// Llamar a la función del archivo .sql.go
 	resultado, err := dto.RestaurarBaseDatos(h.db, req.RutaRespaldo, payload.Username, req.Descripcion)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -133,7 +125,6 @@ func (h *Handler) RestaurarBaseDatos(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar si el resultado indica error
 	if resultado.Resultado == "ERROR" {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": resultado.MensajeError,
@@ -145,7 +136,6 @@ func (h *Handler) RestaurarBaseDatos(ctx *gin.Context) {
 		return
 	}
 
-	// Respuesta exitosa
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": resultado,
@@ -163,7 +153,6 @@ func (h *Handler) ListarRespaldos(ctx *gin.Context) {
 		return
 	}
 
-	// Obtener información del usuario autenticado
 	authorized, exists := ctx.Get("authorized")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -180,7 +169,6 @@ func (h *Handler) ListarRespaldos(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar que el usuario tenga rol de DBA
 	if payload.Rol != "DBA" {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"error": "Acceso denegado: Se requieren permisos de DBA",
@@ -188,7 +176,6 @@ func (h *Handler) ListarRespaldos(ctx *gin.Context) {
 		return
 	}
 
-	// Llamar a la función del archivo .sql.go
 	respaldos, err := dto.ListarRespaldos(h.db, req.RutaRespaldos)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -198,7 +185,6 @@ func (h *Handler) ListarRespaldos(ctx *gin.Context) {
 		return
 	}
 
-	// Respuesta exitosa
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
@@ -211,7 +197,6 @@ func (h *Handler) ListarRespaldos(ctx *gin.Context) {
 
 // ObtenerAuditoriaDBA obtiene el historial de auditoría DBA
 func (h *Handler) ObtenerAuditoriaDBA(ctx *gin.Context) {
-	// Obtener información del usuario autenticado
 	authorized, exists := ctx.Get("authorized")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -228,7 +213,6 @@ func (h *Handler) ObtenerAuditoriaDBA(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar que el usuario tenga rol de DBA
 	if payload.Rol != "DBA" {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"error": "Acceso denegado: Se requieren permisos de DBA",
@@ -236,11 +220,9 @@ func (h *Handler) ObtenerAuditoriaDBA(ctx *gin.Context) {
 		return
 	}
 
-	// Obtener parámetros de consulta
 	limitStr := ctx.DefaultQuery("limit", "50")
 	offsetStr := ctx.DefaultQuery("offset", "0")
 
-	// Convertir strings a enteros
 	limit := 50
 	offset := 0
 	if l, err := strconv.Atoi(limitStr); err == nil {
@@ -250,7 +232,6 @@ func (h *Handler) ObtenerAuditoriaDBA(ctx *gin.Context) {
 		offset = o
 	}
 
-	// Llamar a la función del archivo .sql.go
 	auditorias, err := dto.ObtenerAuditoriaDBA(h.db, limit, offset)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -260,7 +241,6 @@ func (h *Handler) ObtenerAuditoriaDBA(ctx *gin.Context) {
 		return
 	}
 
-	// Respuesta exitosa
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
