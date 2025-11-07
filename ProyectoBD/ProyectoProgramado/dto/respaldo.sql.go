@@ -367,8 +367,6 @@ func ListarRespaldos(db *sql.DB, rutaRespaldos string) ([]RespaldoInfo, error) {
 // RestaurarBaseDatosConConexionMaster ejecuta el procedimiento usando una conexión específica a master
 func RestaurarBaseDatosConConexionMaster(masterDB *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion string) (*RestaurarResponse, error) {
 	var resultado RestaurarResponse
-	
-	// Primero intentamos con 6 columnas (caso exitoso)
 	err := masterDB.QueryRow(
 		"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
 		sql.Named("ruta_respaldo", rutaRespaldo),
@@ -416,7 +414,6 @@ func RestaurarBaseDatosConConexionMaster(masterDB *sql.DB, rutaRespaldo, usuario
 	return &resultado, nil
 }
 
-// ObtenerAuditoriaDBA obtiene el historial de auditoría DBA con paginación usando vista
 func ObtenerAuditoriaDBA(db *sql.DB, limit, offset int) ([]AuditoriaDBAResponse, error) {
 	query := `
 		SELECT 
