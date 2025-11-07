@@ -260,7 +260,7 @@ func (h *Handler) Login(ctx *gin.Context) {
 		return
 	}
 
-	//Verificar si es un usuario de SQL Server
+	// Es un usuario de SQL Server?
 	if h.sqlServerAuth.IsSQLServerUser(req.Email) {
 		username := h.sqlServerAuth.ExtractUsernameFromEmail(req.Email)
 		sqlUser, err := h.sqlServerAuth.AuthenticateSQLServerUser(username, req.Password)
@@ -289,7 +289,7 @@ func (h *Handler) Login(ctx *gin.Context) {
 		return
 	}
 
-	//Verificar si es un usuario de la aplicación
+	// Es un usuario de la aplicación?
 	user, err := dto.GetUsuarioByCorreo(h.db, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -320,14 +320,13 @@ func (h *Handler) Login(ctx *gin.Context) {
 			Image:    image,
 		},
 	}
-	//Agregar información del usuario al contexto para el middleware de auditoría
+	//Agregar información del usuario a auditoría
 	ctx.Set("login_user", user.Username)
 	ctx.JSON(http.StatusOK, resp)
 }
 
 // Logout de usuario
 func (h *Handler) Logout(ctx *gin.Context) {
-	// Intentar obtener el usuario del token si existe
 	userName := "anonymous"
 	authHeader := ctx.GetHeader("authorization")
 	if len(authHeader) > 0 {
@@ -337,13 +336,13 @@ func (h *Handler) Logout(ctx *gin.Context) {
 			payload, err := h.tokenBuilder.VerifyToken(accessToken)
 			if err == nil {
 				userName = payload.Username
-				// Agregar información del usuario al contexto para el middleware
+				// Agregar información del usuario a auditoría
 				ctx.Set("logout_user", userName)
 			}
 		}
 	}
 
-	// El middleware de auditoría se encargará de registrar el logout
+	// Auditoría se encargara de registrar el logout
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Sesión cerrada exitosamente",
 		"user":    userName,

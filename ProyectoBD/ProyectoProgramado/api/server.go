@@ -57,9 +57,9 @@ func NewServer(db *sql.DB, tokenDuration time.Duration) (*Server, error) {
 		ValidateHeaders: false,
 	}))
 
-	// Middleware de validación de sesiones (debe ir antes del de auditoría)
+	// Middleware de validación de sesiones
 	router.Use(middleware.SessionValidationMiddleware(sessionService))
-	// Middleware de auditoría global (debe ir después para poder leer el contexto de autenticación)
+	// Middleware de auditoría global 
 	router.Use(middleware.AuditMiddleware(auditService))
 
 	usuarioHandler := usuario.NewHandler(db, tokenBuilder, tokenDuration)
