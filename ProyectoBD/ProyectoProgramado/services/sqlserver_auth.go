@@ -28,8 +28,7 @@ type SQLServerUser struct {
 func (s *SQLServerAuthService) AuthenticateSQLServerUser(username, password string) (*SQLServerUser, error) {
 	roleMapping := map[string]string{
 		"usuario_admin":       "DBA",      
-		"usuario_restringido": "cliente",  
-		"usuario_auditor":     "cliente",
+		"usuario_restringido": "cliente",
 	}
 	
 	// Check if the username is one of our predefined SQL Server users
@@ -41,9 +40,8 @@ func (s *SQLServerAuthService) AuthenticateSQLServerUser(username, password stri
 	// For now, we'll use a simple password validation
 	// In a production environment, you would want to implement proper SQL Server authentication
 	passwordMapping := map[string]string{
-		"usuario_admin":       "AdminPass123!",
+		"usuario_admin":       "Xy@78kM!23zQ",
 		"usuario_restringido": "RestrictedPass123!",
-		"usuario_auditor":     "AuditorPass123!",
 	}
 	
 	expectedPassword, exists := passwordMapping[username]
@@ -63,7 +61,7 @@ func (s *SQLServerAuthService) AuthenticateSQLServerUser(username, password stri
 
 // IsSQLServerUser checks if a given email/username corresponds to a SQL Server user
 func (s *SQLServerAuthService) IsSQLServerUser(emailOrUsername string) bool {
-	sqlServerUsers := []string{"usuario_admin", "usuario_restringido", "usuario_auditor"}
+	sqlServerUsers := []string{"usuario_admin", "usuario_restringido"}
 	
 	// Check if it's a direct username match
 	for _, user := range sqlServerUsers {

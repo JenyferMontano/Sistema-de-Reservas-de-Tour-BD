@@ -223,8 +223,11 @@ type HistorialRespaldos struct {
 // FUNCIONES PARA PROCEDIMIENTOS ALMACENADOS
 // =============================================
 // IMPORTANTE: 
-// - sp_respaldo_reservas_tour y sp_listar_respaldos_reservas_tour están en la base de datos reservas_tour
-// - sp_restaurar_reservas_tour está en la base de datos master
+// - Todos los procedimientos están en la base de datos reservas_tour (adaptados para Azure SQL)
+// - sp_respaldo_reservas_tour: simula backup y registra en auditoría
+// - sp_restaurar_reservas_tour: simula restauración y registra en auditoría
+// - sp_listar_respaldos_reservas_tour: lista respaldos desde auditoría
+// - Documentación completa: db/BACKUP_RESTORE_AZURE.md
 // =============================================
 
 // CrearRespaldo ejecuta el procedimiento almacenado sp_respaldo_reservas_tour
@@ -272,7 +275,7 @@ func CrearRespaldo(db *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion string
 	return &resultado, nil
 }
 
-// RestaurarBaseDatos ejecuta el procedimiento almacenado sp_restaurar_reservas_tour desde master
+// RestaurarBaseDatos ejecuta el procedimiento almacenado sp_restaurar_reservas_tour
 func RestaurarBaseDatos(db *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion string) (*RestaurarResponse, error) {
 	var resultado RestaurarResponse
 
@@ -280,7 +283,7 @@ func RestaurarBaseDatos(db *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion s
 	// El procedimiento devuelve 6 columnas en caso exitoso y 5 en caso de error
 	// Primero intentamos con 6 columnas (caso exitoso)
 	err := db.QueryRow(
-		"EXEC [master].[dbo].[sp_restaurar_reservas_tour] @ruta_respaldo, @usuario_ejecutor, @descripcion",
+		"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
 		sql.Named("ruta_respaldo", rutaRespaldo),
 		sql.Named("usuario_ejecutor", usuarioEjecutor),
 		sql.Named("descripcion", descripcion),
@@ -297,7 +300,7 @@ func RestaurarBaseDatos(db *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion s
 		// Si falla con 6 columnas, intentar con 5 columnas (caso de error)
 		var errorResult RestaurarResponse
 		errorErr := db.QueryRow(
-			"EXEC [master].[dbo].[sp_restaurar_reservas_tour] @ruta_respaldo, @usuario_ejecutor, @descripcion",
+			"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
 			sql.Named("ruta_respaldo", rutaRespaldo),
 			sql.Named("usuario_ejecutor", usuarioEjecutor),
 			sql.Named("descripcion", descripcion),
