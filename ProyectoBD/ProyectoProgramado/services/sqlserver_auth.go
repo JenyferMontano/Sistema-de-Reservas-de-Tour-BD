@@ -24,7 +24,7 @@ type SQLServerUser struct {
 func (s *SQLServerAuthService) AuthenticateSQLServerUser(username, password string) (*SQLServerUser, error) {
 	roleMapping := map[string]string{
 		"usuario_admin":       "DBA",      
-		"usuario_restringido": "cliente",
+		"usuario_restringido": "restringido",
 	}
 	
 	role, exists := roleMapping[username]

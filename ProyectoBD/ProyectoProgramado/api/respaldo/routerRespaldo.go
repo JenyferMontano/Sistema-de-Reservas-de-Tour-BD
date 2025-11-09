@@ -19,7 +19,7 @@ func RegisterRoutes(router *gin.RouterGroup, db *sql.DB, tokenBuilder security.B
 
 		//respaldoGroup.POST("/restaurar", handler.RestaurarBaseDatos)
 
-		respaldoGroup.POST("/respaldos", handler.ListarRespaldos)
+		//respaldoGroup.POST("/respaldos", handler.ListarRespaldos)
 
 		respaldoGroup.GET("/auditoria", handler.ObtenerAuditoriaDBA)
 	}
