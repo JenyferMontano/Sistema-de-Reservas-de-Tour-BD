@@ -1,10 +1,15 @@
 <div class="personas-container">
-  <h2>Lista de Personas</h2>
+  <h2 class="titulo">Lista de Personas</h2>
+
+  <div class="busqueda">
+    <label for="buscar" class="form-label">Buscar personas</label>
+    <input id="buscar" type="text" class="form-control" placeholder="Busca por nombre, apellidos, correo o ID" [(ngModel)]="search">
+  </div>
 
   <div *ngIf="loading" class="alert alert-info">Cargando...</div>
   <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
 
-  <table class="tabla-personas" *ngIf="!loading && personas.length > 0">
+  <table class="tabla-personas" *ngIf="!loading && personasFiltradas.length > 0">
     <thead>
       <tr>
         <th>ID</th>
@@ -15,10 +20,11 @@
         <th>Dirección</th>
         <th>Teléfono</th>
         <th>Correo</th>
+        <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let persona of personas">
+      <tr *ngFor="let persona of personasFiltradas">
         <td>{{ persona.idpersona }}</td>
         <td>{{ persona.nombre }}</td>
         <td>{{ persona.apellido_1 }}</td>
@@ -27,11 +33,15 @@
         <td>{{ persona.direccion }}</td>
         <td>{{ persona.telefono }}</td>
         <td>{{ persona.correo }}</td>
+        <td>
+          <button class="btn btn-sm btn-edit" (click)="onEditar(persona)">Editar</button>
+          <button class="btn btn-sm btn-delete" (click)="onEliminar(persona)">Eliminar</button>
+        </td>
       </tr>
     </tbody>
   </table>
 
-  <div *ngIf="!loading && personas.length === 0">
+  <div *ngIf="!loading && personasFiltradas.length === 0">
     <p>No hay personas registradas.</p>
   </div>
 </div>

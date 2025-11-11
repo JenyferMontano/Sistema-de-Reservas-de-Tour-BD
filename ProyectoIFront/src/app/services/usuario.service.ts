@@ -22,6 +22,14 @@ export class UsuarioService {
     return this._http.post(this.url + 'login', userJSON, options);
   }
 
+  logout(): Observable<any> {
+    const token = this.getToken();
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${token}`);
+    return this._http.post(this.url + 'logout', {}, { headers });
+  }
+
   getIdentity() {
     let identity = sessionStorage.getItem('identity');
     if (identity) {
@@ -34,66 +42,34 @@ export class UsuarioService {
     return sessionStorage.getItem('token');
   }
 
-  getUsuarios(token: any): Observable<any> {
-    let accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', accessToken);
-    let options = {
-      headers,
-    };
-    return this._http.get(this.url + 'usuario/', options);
+  getUsuarios(_token?: any): Observable<any> {
+    return this._http.get(this.url + 'usuario/');
   }
 
-  crearUsuario(usuario: Usuario, token: any): Observable<any> {
-    const accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', accessToken);
-    let options = { headers };
+  crearUsuario(usuario: Usuario, _token?: any): Observable<any> {
     let data = JSON.stringify(usuario);
-    return this._http.post(this.url + 'usuario/', data, options);
+    return this._http.post(this.url + 'usuario/', data);
   }
 
-  getUsuarioById(username: string, token: string): Observable<Usuario> {
-    let accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', accessToken);
-    let options = {
-      headers,
-    };
-    return this._http.get<Usuario>(this.url + 'usuario/' + username, options);
+  getUsuarioById(username: string, _token?: string): Observable<Usuario> {
+    return this._http.get<Usuario>(this.url + 'usuario/' + username);
   }
 
-  getUsuarioByUsername(username: string, token: string): Observable<Usuario> {
-  const accessToken = 'Bearer ' + token;
-  const headers = new HttpHeaders()
-    .set('Content-Type', 'application/json')
-    .set('Authorization', accessToken);
-
-  return this._http.get<Usuario>(this.url + 'usuario/' + username, { headers });
-}
-
-  eliminarUsuario(username: string, token: any): Observable<any> {
-    let accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', accessToken);
-    const options = {
-      headers,
-    };
-
-    return this._http.delete(this.url + 'usuario/' + username, options);
+  getUsuarioByUsername(username: string, _token?: string): Observable<Usuario> {
+    return this._http.get<Usuario>(this.url + 'usuario/' + username);
   }
 
-  actualizarUsuario(username: string, usuario: Usuario, token: any): Observable<Usuario> {
-    let accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', accessToken);
-    let options = {
-      headers,
-    };
+  eliminarUsuario(username: string, _token?: any): Observable<any> {
+    return this._http.delete(this.url + 'usuario/' + username);
+  }
+
+  actualizarUsuario(username: string, usuario: Usuario, _token?: any): Observable<Usuario> {
     let data = JSON.stringify(usuario);
-
-    return this._http.put<Usuario>(this.url + 'usuario/' + username, data, options);
+    return this._http.put<Usuario>(this.url + 'usuario/' + username, data);
   }
 
-  uploadImage(data: FormData, token: string): Observable<any> {
-    const accessToken = 'Bearer ' + token;
-    const headers = new HttpHeaders().set('Authorization', accessToken);
-    return this._http.post(this.url + 'usuario/upload', data, { headers });
+  uploadImage(data: FormData, _token?: string): Observable<any> {
+    return this._http.post(this.url + 'usuario/upload', data);
   }
 
   getUsuarioImageUrl(imageName: string): string {

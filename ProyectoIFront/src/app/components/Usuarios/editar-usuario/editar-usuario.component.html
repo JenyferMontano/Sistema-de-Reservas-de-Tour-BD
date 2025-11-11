@@ -1,11 +1,7 @@
 <div class="edit-container container mt-4">
   <h2 class="text-center titulo-crear">Editar Usuario</h2>
 
-  <div class="mb-3">
-    <label for="buscarUsername" class="form-label">Buscar por Username:</label>
-    <input type="text" id="buscarUsername" class="form-control" [(ngModel)]="usernameBuscar" />
-    <button class="btn custom-btn mt-2" (click)="buscarUsuario()">Buscar</button>
-  </div>
+  
 
   <div *ngIf="mensaje" class="alert alert-success">{{ mensaje }}</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
@@ -44,7 +40,7 @@
         <img [src]="getImageUrl(usuario.image)" alt="Imagen actual" class="img-thumbnail" width="350" />
       </div>
       <div class="col-md-6">
-        <label class="form-label">Subir nueva imagen:</label>
+        <label class="form-label">Subir nueva imagen</label>
         <input type="file" class="form-control" (change)="uploadImage($event)" />
       </div>
     </div>
@@ -58,7 +54,6 @@
     <div class="text-center mt-3">
       <button type="submit" class="btn btn-success me-2">Actualizar</button>
       <button type="button" class="btn btn-danger me-2" (click)="deleteUsuario()">Eliminar</button>
-      <button type="button" class="btn btn-secondary" (click)="resetForm()">Limpiar</button>
     </div>
   </form>
 </div>

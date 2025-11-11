@@ -1,45 +1,45 @@
 <div class="editar-tour-container">
   <h2 class="titulo-editar">Editar Tour</h2>
 
-  <div class="mb-4 row justify-content-center">
-    <div class="col-md-4">
-      <input type="number" class="form-control" [(ngModel)]="idBuscar" name="idBuscar" placeholder="ID del Tour" />
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-buscar" (click)="buscarTour()">Buscar</button>
-    </div>
-  </div>
-
   <form *ngIf="tour.idtour > 0" (ngSubmit)="actualizarTour()" class="formulario-tour p-4">
+    <div class="text-center mb-3" *ngIf="tour.imagetour">
+      <img [src]="getImageUrl(tour.imagetour)" alt="Imagen actual" style="max-height:180px;border:1px solid #bbb;border-radius:0;" />
+    </div>
     <div class="row mb-3">
       <div class="col-md-6">
-        <label>Nombre:</label>
+        <label class="form-label">Nombre</label>
         <input type="text" class="form-control" [(ngModel)]="tour.nombre" name="nombre" required />
       </div>
       <div class="col-md-6">
-        <label>Descripción:</label>
+        <label class="form-label">Descripción</label>
         <input type="text" class="form-control" [(ngModel)]="tour.descripcion" name="descripcion" required />
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-6">
-        <label>Tipo:</label>
-        <input type="text" class="form-control" [(ngModel)]="tour.tipo" name="tipo" required />
+        <label class="form-label">Tipo</label>
+        <select class="form-control" [(ngModel)]="tour.tipo" name="tipo" required>
+          <option>Aventura</option>
+          <option>Naturaleza</option>
+          <option>Cultural</option>
+          <option>Relax</option>
+          <option>Gastronómico</option>
+        </select>
       </div>
       <div class="col-md-6">
-        <label>Precio Base:</label>
-        <input type="number" class="form-control" [(ngModel)]="tour.preciobase" name="preciobase" required />
+        <label class="form-label">Precio Base</label>
+        <input type="text" class="form-control" [(ngModel)]="tour.preciobase" name="preciobase" required inputmode="numeric" pattern="^[0-9]+(\.[0-9]{1,2})?$" />
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-6">
-        <label>Ubicación:</label>
+        <label class="form-label">Ubicación</label>
         <input type="text" class="form-control" [(ngModel)]="tour.ubicacion" name="ubicacion" required />
       </div>
       <div class="col-md-6">
-        <label>Disponibilidad:</label>
+        <label class="form-label">Disponibilidad</label>
         <select class="form-control" [(ngModel)]="tour.disponibilidad" name="disponibilidad" required>
           <option [value]="1">Disponible</option>
           <option [value]="2">No Disponible</option>
@@ -48,26 +48,25 @@
     </div>
 
     <div class="mb-3">
-      <label>Nombre actual de la imagen:</label>
+      <label class="form-label">Nombre actual de la imagen</label>
       <input type="text" class="form-control" [(ngModel)]="tour.imagetour" name="imagetour" />
     </div>
 
     <div class="mb-3">
-      <label>Subir nueva imagen:</label>
+      <label class="form-label">Subir nueva imagen</label>
       <input type="file" class="form-control" (change)="onFileSelected($event)" accept=".jpg,.jpeg,.png" />
       <button type="button" class="btn btn-outline-primary mt-2" (click)="subirImagen()" [disabled]="!imagenSeleccionada">
         Subir Imagen
       </button>
       <div *ngIf="imagenPrevisualizacion" class="mt-3">
-        <label>Previsualización:</label><br />
-        <img [src]="imagenPrevisualizacion" class="img-fluid rounded border" style="max-height: 200px;" />
+        <label class="form-label">Previsualización</label><br />
+        <img [src]="imagenPrevisualizacion" class="img-fluid border" style="max-height: 200px; border-radius: 0;" />
       </div>
     </div>
 
     <div class="d-flex justify-content-between">
       <button type="submit" class="btn btn-success">Actualizar</button>
       <button type="button" class="btn btn-danger" (click)="eliminarTour()">Eliminar</button>
-      <button type="button" class="btn btn-secondary" (click)="resetForm()">Limpiar</button>
     </div>
   </form>
 

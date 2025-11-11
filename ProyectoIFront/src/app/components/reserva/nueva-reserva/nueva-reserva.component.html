@@ -4,20 +4,26 @@
     <h2 class="text-center mb-4 titulo-reserva">Reservar</h2>
 
     <div class="mb-3">
-      <label for="huesped" class="form-label">ID de Huésped</label>
-      <input type="number" id="huesped" class="form-control" [(ngModel)]="huespedId" name="huesped" required>
+      <label for="huesped" class="form-label">Huésped</label>
+      <!-- Admin: selector de personas -->
+      <select *ngIf="rolUsuario === 'admin'" id="huesped" class="form-control" [(ngModel)]="huespedId" name="huesped" required>
+        <option [ngValue]="0" disabled>Seleccione un huésped</option>
+        <option *ngFor="let p of personas" [ngValue]="p.idpersona">{{ p.idpersona }} - {{ p.nombre }} {{ p.apellido_1 }} {{ p.apellido_2 }}</option>
+      </select>
+      <!-- Cliente: no pedir el ID -->
+      <div *ngIf="rolUsuario !== 'admin'" class="form-text">Usaremos tu cuenta como huésped automáticamente.</div>
     </div>
 
     <!-- Formulario para agregar un detalle -->
     <form (submit)="agregarDetalle(); $event.preventDefault();">
       <div class="mb-3">
         <label for="fecha" class="form-label">Fecha</label>
-        <input type="date" id="fecha" class="form-control" [(ngModel)]="nuevoDetalle.fecha" name="fecha" required>
+        <input type="date" id="fecha" class="form-control" [(ngModel)]="nuevoDetalle.fecha" name="fecha" [min]="todayStr" required>
       </div>
 
       <div class="mb-3">
         <label for="hora" class="form-label">Hora</label>
-        <input type="time" id="hora" class="form-control" [(ngModel)]="nuevoDetalle.hora" name="hora" required>
+        <input type="time" id="hora" class="form-control" [(ngModel)]="nuevoDetalle.hora" name="hora" min="10:00" max="15:00" required>
       </div>
 
       <div class="mb-3">
@@ -28,7 +34,7 @@
       <!-- Solo para administradores -->
       <div class="mb-3" *ngIf="rolUsuario === 'admin'">
         <label for="descuento" class="form-label">Descuento</label>
-        <input type="number" id="descuento" class="form-control" [(ngModel)]="nuevoDetalle.descuento" name="descuento">
+        <input type="number" id="descuento" class="form-control" [(ngModel)]="nuevoDetalle.descuento" name="descuento" placeholder="Ej: 10 = 10%">
       </div>
 
       <div class="text-center">

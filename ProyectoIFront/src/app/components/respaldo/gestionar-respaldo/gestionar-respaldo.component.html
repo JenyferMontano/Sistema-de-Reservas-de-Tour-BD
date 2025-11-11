@@ -1,0 +1,46 @@
+<div class="respaldo-container container py-4">
+  <h2 class="mb-4">Gestión de respaldos</h2>
+
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-backup text-light">
+          <h5 class="mb-0">Crear respaldo</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-4">
+            El archivo se generará automáticamente con la estructura:
+            <span class="ruta-ejemplo">C:\backups\reservas_tour_YYYYMMDD_HHMMSS.bak</span>
+          </p>
+
+          <div class="alert alert-secondary d-flex align-items-center justify-content-between">
+            <span class="fw-semibold">Próximo respaldo:</span>
+            <code class="mb-0 ruta-generada">{{ rutaSugerida }}</code>
+          </div>
+
+          <button class="btn btn-backup w-100 mt-3" type="button" (click)="onCrearRespaldo()" [disabled]="creandoRespaldo">
+            <span *ngIf="!creandoRespaldo">Crear respaldo ahora</span>
+            <span *ngIf="creandoRespaldo" class="spinner-border spinner-border-sm"></span>
+          </button>
+
+          <div class="mt-4" *ngIf="ultimoRespaldo as respaldo">
+            <h6>Último respaldo registrado</h6>
+            <ul class="list-unstyled">
+              <li><strong>Resultado:</strong> {{ respaldo.resultado }}</li>
+              <li *ngIf="respaldo.archivo_respaldo">
+                <strong>Archivo:</strong> {{ respaldo.archivo_respaldo }}
+              </li>
+              <li *ngIf="respaldo.fecha_respaldo">
+                <strong>Fecha:</strong> {{ respaldo.fecha_respaldo | date: 'short' }}
+              </li>
+              <li *ngIf="respaldo.mensaje">
+                <strong>Mensaje:</strong> {{ respaldo.mensaje }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

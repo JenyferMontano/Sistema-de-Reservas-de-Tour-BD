@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Tour } from '../../../models/tour';
 import { TourService } from '../../../services/tour.service';
 import { UsuarioService } from '../../../services/usuario.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-edit-tour',
@@ -14,7 +16,6 @@ import { UsuarioService } from '../../../services/usuario.service';
   providers: [TourService]
 })
 export class EditTourComponent {
-  public idBuscar: number = 0;
   public tour: Tour = this.resetTour();
   public mensaje: string = '';
   public error: string = '';
@@ -25,17 +26,33 @@ export class EditTourComponent {
 
   constructor(
     private tourService: TourService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
-  buscarTour(): void {
+  ngOnInit(): void {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.buscarTour(+idParam);
+    }
+  }
+
+  getImageUrl(imageName: string | null): string {
+    if (!imageName || imageName.trim() === '') {
+      return 'assets/img/default-tour.png';
+    }
+    return this.tourService.getTourImageUrl(imageName);
+  }
+
+  private buscarTour(id: number): void {
     this.token = this.usuarioService.getToken() || '';
     if (!this.token.trim()) {
       this.error = 'Token de autenticación no definido.';
       return;
     }
 
-    this.tourService.getTourById(this.idBuscar, this.token).subscribe({
+    this.tourService.getTourById(id, this.token).subscribe({
       next: (response: Tour) => {
         this.tour = response;
         this.mensaje = '';
@@ -54,25 +71,50 @@ export class EditTourComponent {
     this.tour.disponibilidad = Number(this.tour.disponibilidad);
     this.tourService.updateTour(this.tour, this.token).subscribe({
       next: () => {
-        this.mensaje = 'Tour actualizado correctamente.';
+        // Unificar mensajes con SweetAlert
+        Swal.fire({ 
+          icon: 'success', 
+          title: '¡Actualizado!', 
+          text: 'Tour actualizado correctamente.', 
+          confirmButtonColor: '#4e3e2e' 
+        }).then(() => {
+          this.router.navigate(['/tour/listar']);
+        });
+        this.mensaje = '';
         this.error = '';
       },
       error: () => {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error al actualizar el tour.' });
         this.error = 'Error al actualizar el tour.';
       }
     });
   }
 
   eliminarTour(): void {
-    this.tour.disponibilidad = Number(this.tour.disponibilidad);
-    this.tourService.deleteTour(this.tour.idtour, this.token).subscribe({
-      next: () => {
-        this.mensaje = 'Tour eliminado correctamente.';
-        this.tour = this.resetTour();
-        this.error = '';
-      },
-      error: () => {
-        this.error = 'Error al eliminar el tour.';
+    if (!this.tour || this.tour.idtour <= 0) return;
+    Swal.fire({
+      title: '¿Eliminar tour?',
+      text: `Se eliminará el tour #${this.tour.idtour}. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33'
+    }).then((result: any) => {
+      if (result.isConfirmed) {
+        this.tour.disponibilidad = Number(this.tour.disponibilidad);
+        this.tourService.deleteTour(this.tour.idtour, this.token).subscribe({
+          next: () => {
+            Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Tour eliminado correctamente.', confirmButtonColor: '#4e3e2e' });
+            this.tour = this.resetTour();
+            this.mensaje = '';
+            this.error = '';
+          },
+          error: () => {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al eliminar el tour.' });
+            this.error = 'Error al eliminar el tour.';
+          }
+        });
       }
     });
   }

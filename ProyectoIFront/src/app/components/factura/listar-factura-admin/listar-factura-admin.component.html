@@ -1,0 +1,46 @@
+<div class="scroll-container">
+  <div class="filtros">
+    <label class="form-label">Buscar</label>
+    <input class="form-control" type="text" placeholder="Por número de factura, id de huésped o número de reserva" [(ngModel)]="searchText" />
+    <div class="checks">
+      <label>Estado:
+        <select [(ngModel)]="filtroEstado">
+          <option value="">Todos</option>
+          <option *ngFor="let e of estadosDisponibles" [value]="e.toLowerCase()">{{ e }}</option>
+        </select>
+      </label>
+      <label>Método:
+        <select [(ngModel)]="filtroMetodo">
+          <option value="">Todos</option>
+          <option *ngFor="let m of metodosDisponibles" [value]="m.toLowerCase()">{{ m }}</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div *ngFor="let f of facturasFiltradas" class="reserva-card">
+    <div class="reserva-header">
+      <h3>Factura #{{ f.idfactura }}</h3>
+      <p><strong>Fecha:</strong> {{ formatFechaHora(f.fechafactura) }}</p>
+      <p><strong>Cliente:</strong> {{ f.nombrepersona }} {{ f.apellido_1 }} {{ f.apellido_2 }} ({{ f.idpersona }})</p>
+      <p><strong>Reserva:</strong> #{{ f.numreserva }}</p>
+      <p><strong>Estado:</strong> <span class="badge" [ngClass]="getEstadoClass(f.estadofactura)">{{ f.estadofactura }}</span></p>
+      <p><strong>Método:</strong> {{ f.metodopago }}</p>
+      <div class="resumen">
+        <p><strong>Subtotal:</strong> {{ f.subtotal | currency:'USD' }}</p>
+        <p><strong>Impuesto:</strong> {{ (f.subtotal * (f.iva/100)) | currency:'USD' }}</p>
+        <p><strong>Total:</strong> {{ f.total | currency:'USD' }}</p>
+      </div>
+      <div class="botones-accion-wide">
+        <button (click)="descargarPDF(f.idfactura)" class="pdf-btn">
+          Descargar PDF
+        </button>
+        <button *ngIf="(f.estadofactura || '').toLowerCase() !== 'anulada'" (click)="anularFactura(f.idfactura)" class="eliminar-btn derecha">
+          Anular Factura
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+

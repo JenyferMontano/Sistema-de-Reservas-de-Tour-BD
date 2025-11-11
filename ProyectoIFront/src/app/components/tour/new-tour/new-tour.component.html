@@ -5,39 +5,42 @@
   <form (ngSubmit)="crearTour()" #tourForm="ngForm">
     <div class="row mb-3">
       <div class="col">
-        <input type="number" class="form-control" placeholder="ID Tour" required [(ngModel)]="tour.idtour" name="idtour">
-      </div>
-      <div class="col">
-        <input type="text" class="form-control" placeholder="Nombre" required [(ngModel)]="tour.nombre" name="nombre">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input id="nombre" type="text" class="form-control" placeholder="Ej: Caminata al volcán" required [(ngModel)]="tour.nombre" name="nombre">
       </div>
     </div>
 
     <div class="mb-3">
-      <textarea class="form-control" placeholder="Descripción" rows="2" required [(ngModel)]="tour.descripcion" name="descripcion"></textarea>
+      <label for="descripcion" class="form-label">Descripción</label>
+      <textarea id="descripcion" class="form-control" placeholder="Resumen atractivo del tour" rows="2" required [(ngModel)]="tour.descripcion" name="descripcion"></textarea>
     </div>
 
     <div class="row mb-3">
       <div class="col">
-        <input type="text" class="form-control" placeholder="Tipo" required [(ngModel)]="tour.tipo" name="tipo">
+        <label for="tipo" class="form-label">Tipo</label>
+        <select id="tipo" class="form-control" required [(ngModel)]="tour.tipo" name="tipo">
+          <option value="" disabled selected>Seleccione un tipo</option>
+          <option>Aventura</option>
+          <option>Naturaleza</option>
+          <option>Cultural</option>
+          <option>Relax</option>
+          <option>Gastronómico</option>
+        </select>
       </div>
       <div class="col">
-        <input type="text" class="form-control" placeholder="Ubicación" required [(ngModel)]="tour.ubicacion" name="ubicacion">
+        <label for="ubicacion" class="form-label">Ubicación</label>
+        <input id="ubicacion" type="text" class="form-control" placeholder="Provincia, cantón, distrito" required [(ngModel)]="tour.ubicacion" name="ubicacion">
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col">
-        <input type="number"
-          step="0.01"
-          class="form-control"
-          placeholder="Precio Base"
-          required
-          [(ngModel)]="tour.preciobase"
-          name="preciobase"
-        />
+        <label for="preciobase" class="form-label">Precio base</label>
+        <input id="preciobase" type="text" class="form-control" placeholder="Ej: 45000" required [(ngModel)]="tour.preciobase" name="preciobase" inputmode="numeric" pattern="^[0-9]+(\.[0-9]{1,2})?$">
       </div>
       <div class="col">
-        <select class="form-control" required [(ngModel)]="tour.disponibilidad" name="disponibilidad">
+        <label for="disp" class="form-label">Disponibilidad</label>
+        <select id="disp" class="form-control" required [(ngModel)]="tour.disponibilidad" name="disponibilidad">
           <option [ngValue]="1">Disponible</option>
           <option [ngValue]="2">No Disponible</option>
         </select>
@@ -45,25 +48,18 @@
     </div>
 
     <div class="mb-3">
-      <input type="file" class="form-control" (change)="uploadTourImage($event)" accept=".png,.jpg,.jpeg" />
+      <label for="img" class="form-label">Imagen del tour</label>
+      <input id="img" type="file" class="form-control" (change)="uploadTourImage($event)" accept=".png,.jpg,.jpeg" />
     </div>
 
     <!-- Vista previa de imagen -->
     <div *ngIf="imagePreview" class="text-center mb-3">
-      <img [src]="imagePreview" style="max-width: 250px; border-radius: 10px;" />
+      <img [src]="imagePreview" style="max-width: 250px; border-radius: 0;" />
     </div>
 
     <!-- Botón de envío -->
     <div class="text-center">
       <button class="btn custom-btn" type="submit">Guardar Tour</button>
-    </div>
-
-    <!-- Mensajes -->
-    <div *ngIf="mensajeExito" class="alert alert-success mt-3 text-center" role="alert">
-      {{ mensajeExito }}
-    </div>
-    <div *ngIf="mensajeError" class="alert alert-danger mt-3 text-center" role="alert">
-      {{ mensajeError }}
     </div>
   </form>
 </div>

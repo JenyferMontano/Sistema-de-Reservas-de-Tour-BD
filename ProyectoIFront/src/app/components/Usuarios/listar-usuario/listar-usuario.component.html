@@ -1,20 +1,26 @@
 <div class="usuarios-container">
-  <h2>Lista de Usuarios</h2>
+  <h2 class="titulo">Lista de Usuarios</h2>
+
+  <div class="busqueda">
+    <label for="buscar" class="form-label">Buscar usuarios</label>
+    <input id="buscar" type="text" class="form-control" placeholder="Busca por username, rol o ID persona" [(ngModel)]="search">
+  </div>
 
   <div *ngIf="loading" class="alert alert-info">Cargando usuarios...</div>
   <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
 
-  <table *ngIf="usuarios.length > 0 && !loading" class="tabla-usuarios">
+  <table *ngIf="usuariosFiltrados.length > 0 && !loading" class="tabla-usuarios">
     <thead>
       <tr>
         <th>Nombre de Usuario</th>
         <th>Rol</th>
         <th>ID Persona</th>
         <th>Imagen</th>
+        <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let usuario of usuarios">
+      <tr *ngFor="let usuario of usuariosFiltrados">
         <td>{{ usuario.username }}</td>
         <td>{{ usuario.rol }}</td>
         <td>{{ usuario.idpersona }}</td>
@@ -23,11 +29,15 @@
                class="imagen-usuario" />
           <span *ngIf="!usuario.image" class="text-muted">Sin imagen</span>
         </td>
+        <td>
+          <button class="btn btn-sm btn-edit" (click)="onEditar(usuario)">Editar</button>
+          <button class="btn btn-sm btn-delete" (click)="onEliminar(usuario)">Eliminar</button>
+        </td>
       </tr>
     </tbody>
   </table>
 
-  <div *ngIf="usuarios.length === 0 && !loading && !error" class="alert alert-warning">
+  <div *ngIf="usuariosFiltrados.length === 0 && !loading && !error" class="alert alert-warning">
     No se encontraron usuarios.
   </div>
 </div>
