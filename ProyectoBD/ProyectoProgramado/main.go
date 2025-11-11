@@ -44,4 +44,15 @@ func main() {
 	if err := server.Start(addr); err != nil {
 		log.Fatal("No se puede iniciar el servidor:", err)
 	}
+
+	addr := config.ServerURL
+    if port := os.Getenv("PORT"); port != "" {
+        addr = "0.0.0.0:" + port
+    } else if addr == "" {
+        addr = "0.0.0.0:8080"
+    }
+
+    if err := server.Start(addr); err != nil {
+        log.Fatal("No se puede iniciar el servidor", err)
+    }
 }
