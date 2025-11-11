@@ -20,6 +20,7 @@ export class UsuarioComponent {
   public usuario: Usuario;
   public personas: Persona[] = [];
   public imagePreview: string | null = null;;
+  public idPersonaSeleccionada: any = '';
 
   constructor(
     private _usuarioService: UsuarioService,
@@ -42,7 +43,37 @@ export class UsuarioComponent {
     }
   }
 
+  validarPassword(): boolean {
+    if (!this.usuario.password || this.usuario.password.trim() === '') {
+      return false;
+    }
+    const pattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
+    return pattern.test(this.usuario.password);
+  }
+
   onSubmit(usuarioForm: any) {
+    // Validar que el formulario sea válido
+    if (usuarioForm.invalid) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Formulario inválido',
+        text: 'Por favor, complete todos los campos correctamente.',
+        confirmButtonColor: '#4e3e2e'
+      });
+      return;
+    }
+
+    // Validar contraseña
+    if (!this.validarPassword()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Contraseña inválida',
+        text: 'La contraseña debe tener al menos 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo.',
+        confirmButtonColor: '#4e3e2e'
+      });
+      return;
+    }
+
     const token = this._usuarioService.getToken();
     if (!token) {
       Swal.fire({
@@ -53,6 +84,9 @@ export class UsuarioComponent {
       this.status = 'unauthorized';
       return;
     }
+
+    // sincroniza selección de persona al modelo antes de enviar
+    this.usuario.idpersona = Number(this.idPersonaSeleccionada);
 
     this._usuarioService.crearUsuario(this.usuario, token).subscribe({
       next: (res) => {
@@ -121,6 +155,7 @@ export class UsuarioComponent {
   this.usuario = new Usuario("", "", "", 0, ""); 
   this.imagePreview = null;
   this.filename = '';
+  this.idPersonaSeleccionada = '';
 }
 
 }

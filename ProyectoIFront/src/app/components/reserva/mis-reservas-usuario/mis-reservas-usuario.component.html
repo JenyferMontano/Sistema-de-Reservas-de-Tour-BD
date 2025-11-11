@@ -11,7 +11,9 @@
     <div *ngFor="let reserva of reservas" class="reserva-card">
       <div class="reserva-header">
         <h3>Reserva #{{ reserva.numreserva }}</h3>
-        <p><strong>Estado:</strong> {{ reserva.estadoreserva }}</p>
+        <p><strong>Estado:</strong>
+          <span class="badge" [ngClass]="getEstadoClass(reserva.estadoreserva)">{{ displayEstado(reserva.estadoreserva) }}</span>
+        </p>
         <p><strong>Fecha:</strong> {{ formatFechaHora(reserva.fechareserva)}}</p>
         <div class="botones-accion-wide">
          <button (click)="toggleDetalles(reserva)">
@@ -34,8 +36,8 @@
             </thead>
             <tbody>
               <tr *ngFor="let detalle of detallesPorReserva[reserva.numreserva]">
-                <td>{{ detalle.fecha }}</td>
-                <td>{{ detalle.hora }}</td>
+                <td>{{ formatFechaDetalle(detalle.fecha) }}</td>
+                <td>{{ formatHoraDetalle(detalle.hora) }}</td>
                 <td>{{ detalle.nombretour }}</td>
                 <td>{{ detalle.cantpersonas }}</td>
                 <td>{{ detalle.precio | currency : "USD" }}</td>

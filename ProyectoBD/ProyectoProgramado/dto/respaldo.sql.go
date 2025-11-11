@@ -6,6 +6,8 @@ package dto
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -66,6 +68,7 @@ type ListarRespaldosResponse struct {
 // Estructura para información de respaldo individual
 type RespaldoInfo struct {
 	NombreArchivo     string  `json:"nombre_archivo"`
+	RutaCompleta      string  `json:"ruta_completa"`
 	FechaModificacion time.Time `json:"fecha_modificacion"`
 	TamañoBytes       int64   `json:"tamaño_bytes"`
 	TamañoMB          float64 `json:"tamaño_mb"`
@@ -232,101 +235,109 @@ type HistorialRespaldos struct {
 
 // CrearRespaldo ejecuta el procedimiento almacenado sp_respaldo_reservas_tour
 func CrearRespaldo(db *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion string) (*RespaldoResponse, error) {
-	var resultado RespaldoResponse
-	
-	err := db.QueryRow(
+	rows, err := db.Query(
 		"EXEC sp_respaldo_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
 		sql.Named("ruta_respaldo", rutaRespaldo),
 		sql.Named("usuario_ejecutor", usuarioEjecutor),
 		sql.Named("descripcion", descripcion),
-	).Scan(
-		&resultado.Resultado,
-		&resultado.ArchivoRespaldo,
-		&resultado.Timestamp,
-		&resultado.UsuarioEjecutor,
-		&resultado.FechaRespaldo,
-		&resultado.Mensaje,
-		&resultado.TiempoEjecucionMs,
 	)
-
 	if err != nil {
-		// Si hay error, intentar obtener información del error
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, fmt.Errorf("sp_respaldo_reservas_tour no retornó resultados")
+	}
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	switch len(columns) {
+	case 7:
+		var resultado RespaldoResponse
+		if err := rows.Scan(
+			&resultado.Resultado,
+			&resultado.ArchivoRespaldo,
+			&resultado.Timestamp,
+			&resultado.UsuarioEjecutor,
+			&resultado.FechaRespaldo,
+			&resultado.Mensaje,
+			&resultado.TiempoEjecucionMs,
+		); err != nil {
+			return nil, err
+		}
+		return &resultado, nil
+	case 5:
 		var errorResult RespaldoResponse
-		errorErr := db.QueryRow(
-			"EXEC sp_respaldo_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
-			sql.Named("ruta_respaldo", rutaRespaldo),
-			sql.Named("usuario_ejecutor", usuarioEjecutor),
-			sql.Named("descripcion", descripcion),
-		).Scan(
+		if err := rows.Scan(
 			&errorResult.Resultado,
 			&errorResult.MensajeError,
 			&errorResult.UsuarioEjecutor,
 			&errorResult.FechaError,
 			&errorResult.TiempoEjecucionMs,
-		)
-
-		if errorErr != nil {
+		); err != nil {
 			return nil, err
 		}
-
 		return &errorResult, nil
+	default:
+		return nil, fmt.Errorf("sp_respaldo_reservas_tour devolvió %d columnas no soportadas", len(columns))
 	}
-
-	return &resultado, nil
 }
 
 // RestaurarBaseDatos ejecuta el procedimiento almacenado sp_restaurar_reservas_tour
 func RestaurarBaseDatos(db *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion string) (*RestaurarResponse, error) {
-	var resultado RestaurarResponse
-
-	// Ejecutar el procedimiento almacenado
-	// El procedimiento devuelve 6 columnas en caso exitoso y 5 en caso de error
-	// Primero intentamos con 6 columnas (caso exitoso)
-	err := db.QueryRow(
-		"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
+	rows, err := db.Query(
+		"EXEC master.dbo.sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
 		sql.Named("ruta_respaldo", rutaRespaldo),
 		sql.Named("usuario_ejecutor", usuarioEjecutor),
 		sql.Named("descripcion", descripcion),
-	).Scan(
-		&resultado.Resultado,
-		&resultado.ArchivoRestaurado,
-		&resultado.UsuarioEjecutor,
-		&resultado.FechaRestauracion,
-		&resultado.Mensaje,
-		&resultado.TiempoEjecucionMs,
 	)
-
 	if err != nil {
-		// Si falla con 6 columnas, intentar con 5 columnas (caso de error)
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, fmt.Errorf("sp_restaurar_reservas_tour no retornó resultados")
+	}
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	switch len(columns) {
+	case 6:
+		var resultado RestaurarResponse
+		if err := rows.Scan(
+			&resultado.Resultado,
+			&resultado.ArchivoRestaurado,
+			&resultado.UsuarioEjecutor,
+			&resultado.FechaRestauracion,
+			&resultado.Mensaje,
+			&resultado.TiempoEjecucionMs,
+		); err != nil {
+			return nil, err
+		}
+		return &resultado, nil
+	case 5:
 		var errorResult RestaurarResponse
-		errorErr := db.QueryRow(
-			"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
-			sql.Named("ruta_respaldo", rutaRespaldo),
-			sql.Named("usuario_ejecutor", usuarioEjecutor),
-			sql.Named("descripcion", descripcion),
-		).Scan(
+		if err := rows.Scan(
 			&errorResult.Resultado,
 			&errorResult.MensajeError,
 			&errorResult.UsuarioEjecutor,
 			&errorResult.FechaError,
 			&errorResult.TiempoEjecucionMs,
-		)
-
-		if errorErr != nil {
-			// Si ambos fallan, retornar error genérico
-			return &RestaurarResponse{
-				Resultado:        "ERROR",
-				MensajeError:     err.Error(),
-				UsuarioEjecutor:  usuarioEjecutor,
-				FechaError:       time.Now(),
-				TiempoEjecucionMs: 0,
-			}, err
+		); err != nil {
+			return nil, err
 		}
-
 		return &errorResult, nil
+	default:
+		return nil, fmt.Errorf("sp_restaurar_reservas_tour devolvió %d columnas no soportadas", len(columns))
 	}
-
-	return &resultado, nil
 }
 
 // ListarRespaldos ejecuta el procedimiento almacenado sp_listar_respaldos_reservas_tour
@@ -344,8 +355,9 @@ func ListarRespaldos(db *sql.DB, rutaRespaldos string) ([]RespaldoInfo, error) {
 	var respaldos []RespaldoInfo
 	for rows.Next() {
 		var respaldo RespaldoInfo
+		var nombreArchivo string
 		err := rows.Scan(
-			&respaldo.NombreArchivo,
+			&nombreArchivo,
 			&respaldo.FechaModificacion,
 			&respaldo.TamañoBytes,
 			&respaldo.TamañoMB,
@@ -353,6 +365,13 @@ func ListarRespaldos(db *sql.DB, rutaRespaldos string) ([]RespaldoInfo, error) {
 		if err != nil {
 			return nil, err
 		}
+		basePath := strings.TrimRight(rutaRespaldos, "\\")
+		if basePath != "" {
+			respaldo.RutaCompleta = fmt.Sprintf("%s\\%s", basePath, nombreArchivo)
+		} else {
+			respaldo.RutaCompleta = nombreArchivo
+		}
+		respaldo.NombreArchivo = nombreArchivo
 		respaldos = append(respaldos, respaldo)
 	}
 
@@ -366,52 +385,55 @@ func ListarRespaldos(db *sql.DB, rutaRespaldos string) ([]RespaldoInfo, error) {
 
 // RestaurarBaseDatosConConexionMaster ejecuta el procedimiento usando una conexión específica a master
 func RestaurarBaseDatosConConexionMaster(masterDB *sql.DB, rutaRespaldo, usuarioEjecutor, descripcion string) (*RestaurarResponse, error) {
-	var resultado RestaurarResponse
-	err := masterDB.QueryRow(
-		"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
+	rows, err := masterDB.Query(
+		"EXEC master.dbo.sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
 		sql.Named("ruta_respaldo", rutaRespaldo),
 		sql.Named("usuario_ejecutor", usuarioEjecutor),
 		sql.Named("descripcion", descripcion),
-	).Scan(
-		&resultado.Resultado,
-		&resultado.ArchivoRestaurado,
-		&resultado.UsuarioEjecutor,
-		&resultado.FechaRestauracion,
-		&resultado.Mensaje,
-		&resultado.TiempoEjecucionMs,
 	)
-
 	if err != nil {
-		// Si falla con 6 columnas, intentar con 5 columnas (caso de error)
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, fmt.Errorf("sp_restaurar_reservas_tour no retornó resultados")
+	}
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	switch len(columns) {
+	case 6:
+		var resultado RestaurarResponse
+		if err := rows.Scan(
+			&resultado.Resultado,
+			&resultado.ArchivoRestaurado,
+			&resultado.UsuarioEjecutor,
+			&resultado.FechaRestauracion,
+			&resultado.Mensaje,
+			&resultado.TiempoEjecucionMs,
+		); err != nil {
+			return nil, err
+		}
+		return &resultado, nil
+	case 5:
 		var errorResult RestaurarResponse
-		errorErr := masterDB.QueryRow(
-			"EXEC sp_restaurar_reservas_tour @ruta_respaldo, @usuario_ejecutor, @descripcion",
-			sql.Named("ruta_respaldo", rutaRespaldo),
-			sql.Named("usuario_ejecutor", usuarioEjecutor),
-			sql.Named("descripcion", descripcion),
-		).Scan(
+		if err := rows.Scan(
 			&errorResult.Resultado,
 			&errorResult.MensajeError,
 			&errorResult.UsuarioEjecutor,
 			&errorResult.FechaError,
 			&errorResult.TiempoEjecucionMs,
-		)
-
-		if errorErr != nil {
-			// Si ambos fallan, retornar error genérico
-			return &RestaurarResponse{
-				Resultado:        "ERROR",
-				MensajeError:     err.Error(),
-				UsuarioEjecutor:  usuarioEjecutor,
-				FechaError:       time.Now(),
-				TiempoEjecucionMs: 0,
-			}, err
+		); err != nil {
+			return nil, err
 		}
-
 		return &errorResult, nil
+	default:
+		return nil, fmt.Errorf("sp_restaurar_reservas_tour devolvió %d columnas no soportadas", len(columns))
 	}
-
-	return &resultado, nil
 }
 
 func ObtenerAuditoriaDBA(db *sql.DB, limit, offset int) ([]AuditoriaDBAResponse, error) {

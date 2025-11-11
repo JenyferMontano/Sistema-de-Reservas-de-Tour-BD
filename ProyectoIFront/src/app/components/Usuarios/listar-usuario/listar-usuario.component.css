@@ -7,11 +7,15 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.usuarios-container h2 {
+.titulo {
   color: #333;
   margin-bottom: 1.5rem;
   text-align: center;
 }
+
+.busqueda { margin-bottom: 1rem; }
+.form-label { font-weight: 600; color: #1b130d; }
+.form-control { border-radius: 0; }
 
 .tabla-usuarios {
   width: 100%;
@@ -27,6 +31,23 @@
   background-color: rgba(255, 255, 255, 0.4);
 }
 
+.btn-edit {
+  border-radius: 0;
+  margin-right: 6px;
+  background-color: #198754;
+  color: #fff;
+  border: none;
+}
+.btn-edit:hover { background-color: #157347; }
+
+.btn-delete {
+  border-radius: 0;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+.btn-delete:hover { background-color: #bb2d3b; }
+
 .error {
   color: red;
   margin-bottom: 1rem;
@@ -35,6 +56,6 @@
 
 .imagen-usuario {
   max-width: 80px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 2px solid #ccc;
 }

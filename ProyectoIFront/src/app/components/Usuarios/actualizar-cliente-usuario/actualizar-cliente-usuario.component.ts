@@ -76,20 +76,25 @@ export class ActualizarClienteUsuarioComponent {
             Swal.fire({
             icon: 'success',
             title: '¡Actualización exitosa!',
-            text: 'Persona actualizada correctamente.',
+            text: 'Usuario actualizado correctamente.',
             timer: 3000,
             timerProgressBar: true,
             showConfirmButton: true,
+            confirmButtonColor: '#4e3e2e'
           });
             this.status = 2;
-            sessionStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+            // Actualiza el identity en sesión para refrescar avatar y datos en navbar
+            const currentIdentityStr = sessionStorage.getItem('identity');
+            const currentIdentity = currentIdentityStr ? JSON.parse(currentIdentityStr) : {};
+            const newIdentity = { ...currentIdentity, ...usuarioActualizado };
+            sessionStorage.setItem('identity', JSON.stringify(newIdentity));
           },
           error: (err) => {
             console.error(err);
             Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Error al actualizar la persona.',
+            text: 'Error al actualizar el usuario.',
           });
             this.error = 'Error al actualizar la persona!!!';
             this.mensaje = '';

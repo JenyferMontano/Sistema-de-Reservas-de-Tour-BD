@@ -4,11 +4,13 @@ import { Persona } from '../../../models/persona';
 import { UsuarioService } from '../../../services/usuario.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-editar-persona',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './editar-persona.component.html',
   styleUrl: './editar-persona.component.css',
   providers: [PersonaService],
@@ -18,22 +20,26 @@ export class EditarPersonaComponent {
   public status: number;
   public persona: Persona;
   private token: any;
-  public idBuscar: number = 0;
   public mensaje: string = '';
   public error: string = '';
   public fechaNacString: string = '';
+  public todayStr: string = new Date().toISOString().substring(0,10);
 
   constructor(
     private usuarioService: UsuarioService,
-    private personaService: PersonaService
+    private personaService: PersonaService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.status = -1;
     this.persona = new Persona(0, '', '', '', new Date(), '', '', '');
     this.token = this.usuarioService.getToken();
   }
 
-  buscarPersona() {
-    this.personaService.getPersonaById(this.idBuscar, this.token).subscribe({
+  private cargarPorRuta() {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!id) { return; }
+    this.personaService.getPersonaById(id, this.token).subscribe({
       next: (res: Persona) => {
         this.persona = {
           ...res,
@@ -45,6 +51,7 @@ export class EditarPersonaComponent {
         this.status = 1;
         this.mensaje = 'Persona encontrada!';
         this.error = '';
+        setTimeout(() => { this.mensaje = ''; }, 3000);
       },
       error: (err) => {
         console.error(err);
@@ -55,8 +62,18 @@ export class EditarPersonaComponent {
     });
   }
 
+  ngOnInit() {
+    this.cargarPorRuta();
+  }
+
   actualizarPersona() {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Validaciones
+    const telRegex = /^[0-9]{8}$/;
+    if (!telRegex.test(this.persona.telefono)) {
+      Swal.fire({ icon: 'warning', title: 'Teléfono inválido', text: 'El teléfono debe tener 8 dígitos.' });
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(this.persona.correo)) {
       Swal.fire({
         icon: 'warning',
@@ -65,6 +82,7 @@ export class EditarPersonaComponent {
       });
       return;
     }
+    // Mantener la fecha de nacimiento original (no se actualiza)
     this.persona.fechanac = new Date(this.fechaNacString);
     this.personaService
       .actualizarPersona(this.persona.idpersona, this.persona, this.token)
@@ -74,9 +92,10 @@ export class EditarPersonaComponent {
             icon: 'success',
             title: '¡Actualizado!',
             text: 'Persona actualizada correctamente!',
+            confirmButtonColor: '#4e3e2e'
+          }).then(() => {
+            this.router.navigate(['/persona/listar']);
           });
-          this.status = 2;
-          this.resetForm();
         },
         error: (err) => {
           console.error(err);

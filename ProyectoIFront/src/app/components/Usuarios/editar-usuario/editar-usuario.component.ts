@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../../models/usuario';
 import Swal from 'sweetalert2';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-editar-usuario',
@@ -25,15 +26,21 @@ export class EditarUsuarioComponent {
   selectedFile: File | null = null;
   nuevaPassword: string = '';
 
-  constructor(private usuarioService: UsuarioService) {
+  constructor(
+    private usuarioService: UsuarioService, 
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.usuario = new Usuario("", "", "", 0, "")
     this.token = this.usuarioService.getToken();
     this.status = -1
   }
 
 
-  buscarUsuario() {
-    this.usuarioService.getUsuarioById(this.usernameBuscar, this.token).subscribe({
+  private cargarPorRuta() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) { return; }
+    this.usuarioService.getUsuarioById(id, this.token).subscribe({
       next: (res: Usuario) => {
         this.usuario = res;
         this.mensaje = 'Usuario encontrado!';
@@ -51,6 +58,10 @@ export class EditarUsuarioComponent {
         }, 5000);
       }
     });
+  }
+
+  ngOnInit() {
+    this.cargarPorRuta();
   }
 
   deleteUsuario() {
@@ -118,6 +129,9 @@ export class EditarUsuarioComponent {
             icon: 'success',
             title: '¡Actualizado!',
             text: 'Usuario actualizado correctamente!',
+            confirmButtonColor: '#4e3e2e'
+          }).then(() => {
+            this.router.navigate(['/usuario/listar']);
           });
           this.status = 2;
         },
@@ -183,15 +197,11 @@ export class EditarUsuarioComponent {
   }
 
   resetForm(): void {
-    this.usuario = new Usuario("", "", "", 0, "");
+    // Limpia únicamente campos editables/temporales
     this.nuevaPassword = '';
-    this.usernameBuscar = '';
     this.imagePreview = null;
     this.selectedFile = null;
     this.filename = '';
-    this.mensaje = '';
-    this.error = '';
-    this.status = -1;
   }
 
   getImageUrl(imageName: string): string {

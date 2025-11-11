@@ -1,49 +1,58 @@
 <div class="form-container container mt-4">
   <h2 class="text-center titulo-crear">Crear Persona</h2>
   <form (ngSubmit)="crearPersona()" #personaForm="ngForm">
-    
+
     <div class="row mb-3">
       <div class="col">
-        <input type="number" class="form-control" placeholder="ID" required [(ngModel)]="persona.idpersona"
+        <label for="idPersona" class="form-label">Identificación</label>
+        <input id="idPersona" type="number" class="form-control" placeholder="Ej: 118590471" required [(ngModel)]="persona.idpersona"
           name="idPersona">
       </div>
       <div class="col">
-        <input type="text" class="form-control" placeholder="Nombre" required [(ngModel)]="persona.nombre"
-          name="nombre">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input id="nombre" type="text" class="form-control" placeholder="Escribe tu nombre"
+          required [(ngModel)]="persona.nombre" name="nombre">
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col">
-        <input type="text" class="form-control" placeholder="Apellido 1" required [(ngModel)]="persona.apellido_1"
+        <label for="apellido1" class="form-label">Primer apellido</label>
+        <input id="apellido1" type="text" class="form-control" placeholder="Ej: Rodríguez" required [(ngModel)]="persona.apellido_1"
           name="apellido_1">
       </div>
       <div class="col">
-        <input type="text" class="form-control" placeholder="Apellido 2" required [(ngModel)]="persona.apellido_2"
+        <label for="apellido2" class="form-label">Segundo apellido</label>
+        <input id="apellido2" type="text" class="form-control" placeholder="Ej: Pérez" required [(ngModel)]="persona.apellido_2"
           name="apellido_2">
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col">
-        <input type="date" class="form-control" required [(ngModel)]="fechaNacString" name="fechanac">
+        <label for="fechanac" class="form-label">Fecha de nacimiento</label>
+        <input id="fechanac" type="date" class="form-control" required [(ngModel)]="fechaNacString" name="fechanac" [attr.max]="todayStr">
       </div>
       <div class="col">
-        <input type="text" class="form-control" placeholder="Dirección" required [(ngModel)]="persona.direccion"
+        <label for="direccion" class="form-label">Dirección</label>
+        <input id="direccion" type="text" class="form-control" placeholder="Provincia, cantón, distrito y señas exactas" required [(ngModel)]="persona.direccion"
           name="direccion">
       </div>
       <div class="col">
-        <input type="text" class="form-control" placeholder="Teléfono" required [(ngModel)]="persona.telefono"
-          name="telefono">
+        <label for="telefono" class="form-label">Teléfono</label>
+        <input id="telefono" type="text" class="form-control" placeholder="Ej: 88888888" required [(ngModel)]="persona.telefono"
+          name="telefono" pattern="^[0-9]{8}$" maxlength="8" inputmode="numeric" title="Ingrese 8 dígitos, por ejemplo 88888888">
       </div>
     </div>
 
     <div class="mb-3">
-      <input type="email" class="form-control" placeholder="correo@gmail.com" required [(ngModel)]="persona.correo"
-        name="correo"  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+      <label for="correo" class="form-label">Correo electrónico</label>
+      <input id="correo" type="email" class="form-control" placeholder="Ej: nombre@dominio.com" required [(ngModel)]="persona.correo"
+        name="correo" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" title="Por favor ingrese un correo válido (ej: nombre@dominio.com)">
     </div>
+
     <div class="text-center">
-  <button type="submit" class="btn custom-btn">Registrar Persona</button>
-</div>
+      <button type="submit" class="btn custom-btn">Registrar Persona</button>
+    </div>
   </form>
 </div>

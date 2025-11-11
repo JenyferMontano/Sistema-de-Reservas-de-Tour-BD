@@ -17,6 +17,7 @@ export class AgregarPersonaComponent {
   public status: number;
   public persona: Persona;
   private token: any;
+  public todayStr: string;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -24,6 +25,7 @@ export class AgregarPersonaComponent {
   ) {
     this.status = -1;
     this.persona = new Persona(0, '', '', '', new Date(), '', '', '');
+    this.todayStr = new Date().toISOString().substring(0, 10);
   }
 
   get fechaNacString(): string {
@@ -46,7 +48,30 @@ export class AgregarPersonaComponent {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Validación de fecha de nacimiento: no permitir futuras
+    const hoy = new Date();
+    const fechaNac = new Date(this.persona.fechanac);
+    if (fechaNac > hoy) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Fecha inválida',
+        text: 'La fecha de nacimiento no puede ser futura.',
+      });
+      return;
+    }
+
+    // Validación de teléfono: 8 dígitos
+    const telRegex = /^[0-9]{8}$/;
+    if (!telRegex.test(this.persona.telefono)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Teléfono inválido',
+        text: 'El teléfono debe tener 8 dígitos. Ejemplo: 88888888',
+      });
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(this.persona.correo)) {
       Swal.fire({
         icon: 'warning',
@@ -64,6 +89,7 @@ export class AgregarPersonaComponent {
           confirmButtonColor: '#4e3e2e',
         });
         console.log('Respuesta:', response);
+        this.resetForm();
       },
       error: (err: Error) => {
         Swal.fire({
@@ -74,5 +100,10 @@ export class AgregarPersonaComponent {
         console.error('Error al crear persona:', err);
       },
     });
+  }
+
+  private resetForm(): void {
+    this.persona = new Persona(0, '', '', '', new Date(), '', '', '');
+    this.todayStr = new Date().toISOString().substring(0, 10);
   }
 }
