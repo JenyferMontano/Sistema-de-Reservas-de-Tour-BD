@@ -16,52 +16,7 @@ export class TourService {
     this.accessToken = '';
   }
 
-  crearTour(tour: Tour, token: string): Observable<Tour> {
-    this.accessToken = 'Bearer ' + token;
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Authorization', this.accessToken);
-
-    const body = {
-      idtour: tour.idtour,
-      nombre: tour.nombre,
-      descripcion: tour.descripcion,
-      tipo: tour.tipo,
-      disponibilidad: tour.disponibilidad,
-      preciobase: tour.preciobase,
-      ubicacion: tour.ubicacion,
-      imagetour: tour.imagetour
-    };
-
-    return this._http.post<Tour>(this.url + 'tour/', body, { headers });
-  }
-
-  getTours(token: string): Observable<Tour[]> {
-    const cleanToken = token.replace(/^"(.*)"$/, '$1'); // elimina comillas si las hay
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Authorization', `Bearer ${cleanToken}`);
-    
-    return this._http.get<Tour[]>(this.url + 'tour/', { headers });
-  }
-
-  getPublicTours(token: string): Observable<Tour[]> {
-    const headers = new HttpHeaders()
-      .set('Authorization', 'Bearer ' + token)
-      .set('Content-Type', 'application/json');
-
-    return this._http.get<Tour[]>(this.url + 'tour/public', { headers });
-  }
-
-  getTourById(id: number, token: string): Observable<Tour> {
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-    return this._http.get<Tour>(`${this.url}tour/get/${id}`, { headers });
-  }
-
-  updateTour(tour: Tour, token: string): Observable<any> {
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Authorization', 'Bearer ' + token);
+  crearTour(tour: Tour, _token?: string): Observable<Tour> {
 
     const body = {
       nombre: tour.nombre,
@@ -73,27 +28,46 @@ export class TourService {
       imagetour: tour.imagetour
     };
 
-    return this._http.put(`${this.url}tour/${tour.idtour}`, body, { headers });
+    return this._http.post<Tour>(this.url + 'tour/', body);
   }
 
-  deleteTour(id: number, token: string): Observable<any> {
-    const headers = new HttpHeaders()
-      .set('Authorization', 'Bearer ' + token);
-
-    return this._http.delete(`${this.url}tour/${id}`, { headers });
+  getTours(_token?: string): Observable<Tour[]> {
+    return this._http.get<Tour[]>(this.url + 'tour/');
   }
 
-  getToursByTipo(tipo: string, token: string): Observable<Tour[]> {
-    const headers = new HttpHeaders()
-      .set('Authorization', 'Bearer ' + token);
-
-    return this._http.get<Tour[]>(`${this.url}tour/tipo/${tipo}`, { headers });
+  getPublicTours(_token?: string): Observable<Tour[]> {
+    return this._http.get<Tour[]>(this.url + 'tour/public');
   }
 
-  uploadTourImage(data: FormData, token: string): Observable<any> {
-    const accessToken = 'Bearer ' + token;
-    const headers = new HttpHeaders().set('Authorization', accessToken);
-    return this._http.post(this.url + 'tour/upload', data, { headers });
+  getTourById(id: number, _token?: string): Observable<Tour> {
+    return this._http.get<Tour>(`${this.url}tour/get/${id}`);
+  }
+
+  updateTour(tour: Tour, _token?: string): Observable<any> {
+
+    const body = {
+      nombre: tour.nombre,
+      descripcion: tour.descripcion,
+      tipo: tour.tipo,
+      disponibilidad: tour.disponibilidad,
+      preciobase: tour.preciobase,
+      ubicacion: tour.ubicacion,
+      imagetour: tour.imagetour
+    };
+
+    return this._http.put(`${this.url}tour/${tour.idtour}`, body);
+  }
+
+  deleteTour(id: number, _token?: string): Observable<any> {
+    return this._http.delete(`${this.url}tour/${id}`);
+  }
+
+  getToursByTipo(tipo: string, _token?: string): Observable<Tour[]> {
+    return this._http.get<Tour[]>(`${this.url}tour/tipo/${tipo}`);
+  }
+
+  uploadTourImage(data: FormData, _token?: string): Observable<any> {
+    return this._http.post(this.url + 'tour/upload', data);
   }
 
   getTourImageUrl(imageName: string): string {

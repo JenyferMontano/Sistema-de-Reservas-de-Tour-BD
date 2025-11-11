@@ -15,21 +15,11 @@ export class PersonaService {
     this.accessToken = '';
   }
 
-  getPersonas(token: string): Observable<any> {
-    this.accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', this.accessToken);
-    let options = {
-      headers,
-    };
-    return this._http.get(this.url + 'persona/', options);
+  getPersonas(_token?: string): Observable<any> {
+    return this._http.get(this.url + 'persona/');
   }
   
-  crearPersona(persona: Persona, token: any): Observable<Persona> {
-    this.accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', this.accessToken);
-    let options = {
-      headers,
-    };
+  crearPersona(persona: Persona, _token?: any): Observable<Persona> {
     const body = {
       id_persona: persona.idpersona,
       nombre: persona.nombre,
@@ -40,25 +30,15 @@ export class PersonaService {
       telefono: persona.telefono,
       correo: persona.correo,
     };
-    return this._http.post<Persona>(this.url + 'persona/', body, options);
+    const headers = _token ? new HttpHeaders().set('Authorization', 'Bearer ' + _token) : undefined;
+    return this._http.post<Persona>(this.url + 'persona/', body, { headers });
   }
 
-  getPersonaById(id: number, token: string): Observable<Persona> {
-    this.accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', this.accessToken);
-    let options = {
-      headers,
-    };
-    return this._http.get<Persona>(this.url + 'persona/get/' + id, options);
+  getPersonaById(id: number, _token?: string): Observable<Persona> {
+    return this._http.get<Persona>(this.url + 'persona/get/' + id);
   }
 
-  actualizarPersona(id: number, persona: Persona, token: any): Observable<Persona> {
-    this.accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', this.accessToken);
-    let options = {
-      headers,
-    };
-
+  actualizarPersona(id: number, persona: Persona, _token?: any): Observable<Persona> {
     const body = {
       id_persona: persona.idpersona,
       nombre: persona.nombre,
@@ -70,17 +50,11 @@ export class PersonaService {
       correo: persona.correo,
     };
 
-    return this._http.put<Persona>(this.url + 'persona/' + id, body, options);
+    return this._http.put<Persona>(this.url + 'persona/' + id, body);
   }
 
-  eliminarPersona(id: number, token: any): Observable<any> {
-    this.accessToken = 'Bearer ' + token;
-    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', this.accessToken);
-    const options = {
-      headers,
-    };
-
-    return this._http.delete(this.url + 'persona/' + id, options);
+  eliminarPersona(id: number, _token?: any): Observable<any> {
+    return this._http.delete(this.url + 'persona/' + id);
   }
 
 }

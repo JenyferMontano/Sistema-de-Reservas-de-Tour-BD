@@ -12,22 +12,17 @@ import (
 // Middleware de auditoría para registrar accesos a endpoints
 func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Obtener información del request
 		endpoint := ctx.Request.URL.Path
 		metodo := ctx.Request.Method
 		ipAddress := getClientIP(ctx)
 		userAgent := ctx.Request.UserAgent()
 
-		// Procesar request
 		ctx.Next()
 
-		// Registrar auditoría después del procesamiento
 		codigoRespuesta := ctx.Writer.Status()
 
-		// Obtener información del usuario después del procesamiento
 		userName := "anonymous"
 
-		// Para login, obtener el usuario del contexto login_user
 		if endpoint == "/api/v1/login" {
 			if loginUser, exists := ctx.Get("login_user"); exists {
 				if username, ok := loginUser.(string); ok {
@@ -35,7 +30,6 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 				}
 			}
 		} else {
-			// Para otras rutas, obtener del contexto authorized
 			if authorized, exists := ctx.Get("authorized"); exists {
 				if payload, ok := authorized.(*security.Payload); ok {
 					userName = payload.Username
@@ -43,8 +37,7 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 			}
 		}
 
-		// Registrar todos los endpoints excepto health check y archivos estáticos
-		// Excluir solo logout que tiene middleware específico
+
 		if !strings.Contains(endpoint, "/health") &&
 			!strings.Contains(endpoint, "/static") &&
 			endpoint != "/api/v1/logout" {
@@ -65,20 +58,17 @@ func AuditMiddleware(auditService *services.AuditService) gin.HandlerFunc {
 // Middleware para validar sesiones
 func SessionValidationMiddleware(sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Permitir acceso a login sin validación de sesión
 		if ctx.Request.URL.Path == "/api/v1/login" {
 			ctx.Next()
 			return
 		}
 
-		// Solo validar si hay token de autorización
 		authHeader := ctx.GetHeader("authorization")
 		if len(authHeader) == 0 {
 			ctx.Next()
 			return
 		}
 
-		// Obtener información del usuario del token
 		userName := "anonymous"
 		if authorized, exists := ctx.Get("authorized"); exists {
 			if payload, ok := authorized.(*security.Payload); ok {
@@ -86,16 +76,14 @@ func SessionValidationMiddleware(sessionService *services.SessionService) gin.Ha
 			}
 		}
 
-		// Si es usuario anónimo, continuar
 		if userName == "anonymous" {
 			ctx.Next()
 			return
 		}
 
-		// Verificar si el usuario tiene sesiones activas
 		sessions, err := sessionService.GetActiveSessions(userName)
 		if err != nil || len(sessions) == 0 {
-			// No hay sesiones activas, denegar acceso
+
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "Sesión inválida o expirada. Por favor, inicie sesión nuevamente.",
 			})
@@ -109,27 +97,21 @@ func SessionValidationMiddleware(sessionService *services.SessionService) gin.Ha
 // Middleware para registrar inicio de sesión
 func LoginAuditMiddleware(auditService *services.AuditService, sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Obtener información del request antes del procesamiento
+
 		ipAddress := getClientIP(ctx)
 		userAgent := ctx.Request.UserAgent()
 
-		// Procesar request
 		ctx.Next()
 
-		// Verificar si el login fue exitoso (status 200)
 		if ctx.Writer.Status() == http.StatusOK {
-			// Obtener información del usuario del contexto
 			if userName, exists := ctx.Get("login_user"); exists {
 				if username, ok := userName.(string); ok {
 					// Registrar inicio de sesión
 					go func() {
 						auditService.LogSessionStart(username, ipAddress, userAgent)
 					}()
-
-					// Crear sesión
 					sessionID, err := sessionService.CreateSession(username, ipAddress, userAgent)
 					if err == nil {
-						// Agregar sessionID a la respuesta
 						ctx.Header("x-session-id", sessionID)
 					}
 				}
@@ -141,13 +123,11 @@ func LoginAuditMiddleware(auditService *services.AuditService, sessionService *s
 // Middleware para registrar cierre de sesión
 func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *services.SessionService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Obtener información del request antes del procesamiento
 		endpoint := ctx.Request.URL.Path
 		metodo := ctx.Request.Method
 		ipAddress := getClientIP(ctx)
 		userAgent := ctx.Request.UserAgent()
 
-		// Obtener información del usuario autenticado
 		userName := "anonymous"
 		if authorized, exists := ctx.Get("authorized"); exists {
 			if payload, ok := authorized.(*security.Payload); ok {
@@ -155,10 +135,9 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 			}
 		}
 
-		// Procesar logout
 		ctx.Next()
 
-		// Registrar acceso al endpoint de logout
+		// Registrar acceso al endpoint logout
 		codigoRespuesta := ctx.Writer.Status()
 		go func() {
 			auditService.LogAccess(
@@ -171,20 +150,17 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 			)
 		}()
 
-		// Registrar cierre de sesión si fue exitoso
+		// Registrar cierre de sesión
 		if ctx.Writer.Status() == http.StatusOK && userName != "anonymous" {
 			go func() {
-				// Cerrar todas las sesiones del usuario
 				err := sessionService.CloseAllUserSessions(userName)
 				if err != nil {
-					// Log error pero no fallar el logout
 					return
 				}
 
-				// Registrar fin de sesión en auditoría
+				// Registrar fin de sesión
 				err = auditService.LogSessionEnd(userName)
 				if err != nil {
-					// Log error pero no fallar el logout
 					return
 				}
 			}()
@@ -192,12 +168,10 @@ func LogoutAuditMiddleware(auditService *services.AuditService, sessionService *
 	}
 }
 
-// Función auxiliar para obtener IP del cliente
+// Obtener IP del cliente
 func getClientIP(ctx *gin.Context) string {
-	// Intentar obtener IP real si hay proxy
 	ip := ctx.GetHeader("X-Forwarded-For")
 	if ip != "" {
-		// Tomar la primera IP si hay múltiples
 		ips := strings.Split(ip, ",")
 		return strings.TrimSpace(ips[0])
 	}
@@ -207,6 +181,5 @@ func getClientIP(ctx *gin.Context) string {
 		return ip
 	}
 
-	// IP directa del cliente
 	return ctx.ClientIP()
 }

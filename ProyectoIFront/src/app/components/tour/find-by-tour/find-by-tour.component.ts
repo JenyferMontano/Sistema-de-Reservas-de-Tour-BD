@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TourService } from '../../../services/tour.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { Tour } from '../../../models/tour';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-find-by-tour',
@@ -38,14 +39,25 @@ export class FindByTourComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al obtener tipos de tour:', err);
-        this.mensajeError = 'Error al cargar los tipos de tour.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al cargar los tipos de tour.',
+          confirmButtonColor: '#4e3e2e'
+        });
+        this.mensajeError = '';
       }
     });
   }
 
   filtrarTours(): void {
     if (!this.tipo.trim()) {
-      this.mensajeError = 'Selecciona un tipo de tour para filtrar.';
+      Swal.fire({
+        icon: 'warning',
+        title: 'Tipo requerido',
+        text: 'Selecciona un tipo de tour para filtrar.',
+        confirmButtonColor: '#4e3e2e'
+      });
       return;
     }
 
@@ -53,11 +65,25 @@ export class FindByTourComponent implements OnInit {
       next: (data: Tour[]) => {
         this.tours = data;
         this.mensajeError = '';
+        if (data.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Sin resultados',
+            text: 'No se encontraron tours para ese tipo.',
+            confirmButtonColor: '#4e3e2e'
+          });
+        }
       },
       error: (err) => {
         console.error('Error al filtrar tours:', err);
         this.tours = [];
-        this.mensajeError = 'No se encontraron tours para ese tipo.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se encontraron tours para ese tipo.',
+          confirmButtonColor: '#4e3e2e'
+        });
+        this.mensajeError = '';
       }
     });
   }

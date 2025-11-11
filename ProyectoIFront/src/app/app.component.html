@@ -13,29 +13,29 @@
       <div class="d-flex w-100 justify-content-between align-items-center">
 
         <ul class="navbar-nav d-flex align-items-center">
-          <ng-container *ngIf="identity?.role === 'admin'">
+          <ng-container *ngIf="hasAnyRole('admin', 'DBA')">
 
             <!-- Menú Persona -->
-            @if (identity?.role === 'admin') {
+            @if (hasAnyRole('admin', 'DBA')) {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Persona</a>
               <ul class="dropdown-content-css">
                 <li><a [routerLink]="['/persona/agregar']">Agregar Persona</a></li>
                 <li><a [routerLink]="['/persona/listar']">Listar Personas</a></li>
-                <li><a [routerLink]="['/persona/editar']">Editar Persona</a></li>
+                
               </ul>
             </li>
             }
 
 
             <!-- Menú Usuario -->
-            @if (identity?.role === 'admin') {
+            @if (hasAnyRole('admin', 'DBA')) {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Usuario</a>
               <ul class="dropdown-content-css">
                 <li><a [routerLink]="['/usuario/agregar']">Agregar Usuario</a></li>
                 <li><a [routerLink]="['/usuario/listar']">Listar Usuarios</a></li>
-                <li><a [routerLink]="['/usuario/editar']">Editar Usuario</a></li>
+                
               </ul>
             </li>
             }
@@ -52,11 +52,11 @@
               </ul>
             </li>
           } -->
-          @if ((identity?.role === 'admin') || (identity?.role === 'cliente')) {
+          @if (hasAnyRole('admin', 'DBA', 'cliente')) {
           <li class="nav-item user-dropdown mx-3" tabindex="0">
             <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Reserva</a>
             <ul class="dropdown-content-css">
-              @if (identity?.role === 'admin') {
+              @if (hasAnyRole('admin', 'DBA')) {
               <li><a [routerLink]="['/reservas']">Listar Reservas</a></li>
               }
               <li><a [routerLink]="['/reservas/nueva']">Crear Reserva</a></li>
@@ -69,30 +69,44 @@
           </li>
           }
 
-                <!-- Menú Facturas (solo visible para clientes) -->
-            @if (identity?.role === 'cliente') {
+                <!-- Menú Facturas -->
+            @if (hasAnyRole('admin', 'DBA', 'cliente')) {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Facturas</a>
               <ul class="dropdown-content-css">
+                @if (hasAnyRole('admin', 'DBA')) {
+                <li><a [routerLink]="['/facturas/listar']">Listar Facturas</a></li>
+                }
+                @if (identity?.role === 'cliente') {
                 <li><a [routerLink]="['/facturas/mis-facturas']">Mis Facturas</a></li>
+                }
               </ul>
             </li>
             }
 
-          <ng-container *ngIf="identity?.role === 'admin'">
+          <ng-container *ngIf="hasAnyRole('admin', 'DBA')">
             <!-- Menú Tour -->
-            @if (identity?.role === 'admin') {
+            @if (hasAnyRole('admin', 'DBA')) {
             <li class="nav-item user-dropdown mx-3" tabindex="0">
               <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Tour</a>
               <ul class="dropdown-content-css">
                 <li><a routerLink="/tour/agregar">Agregar Tour</a></li>
                 <li><a routerLink="/tour/listar">Listar Tours</a></li>
-                <li><a routerLink="/tour/editar">Editar Tour</a></li>
-                <li><a routerLink="/tour/filtrar">Filtrar Tours</a></li>
+                
               </ul>
             </li>
             }
           </ng-container>
+
+          @if (hasRole('dba')) {
+          <li class="nav-item user-dropdown mx-3" tabindex="0">
+            <a class="nav-link dropdown-toggle text-light" href="#" (click)="$event.preventDefault()">Respaldos</a>
+            <ul class="dropdown-content-css">
+              <li><a [routerLink]="['/respaldos/gestionar']">Crear / Restaurar</a></li>
+              <li><a [routerLink]="['/respaldos/listar']">Ver respaldos</a></li>
+            </ul>
+          </li>
+          }
         </ul>
 
 

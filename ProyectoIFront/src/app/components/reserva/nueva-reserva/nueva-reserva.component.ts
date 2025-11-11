@@ -3,8 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReservaService } from '../../../services/reserva.service';
 import { TourService } from '../../../services/tour.service';
+import { PersonaService } from '../../../services/persona.service';
+import { UsuarioService } from '../../../services/usuario.service';
+import { Persona } from '../../../models/persona';
 import { DetalleReservaCreate } from '../../../models/detalle-reserva';
 import { Tour } from '../../../models/tour';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-nueva-reserva',
@@ -17,6 +21,7 @@ import { Tour } from '../../../models/tour';
 export class NuevaReservaComponent implements OnInit {
   huespedId: number = 0;
   rolUsuario: string = '';
+  todayStr: string = '';
 
   nuevoDetalle: DetalleReservaCreate = {
     fecha: '',
@@ -28,10 +33,13 @@ export class NuevaReservaComponent implements OnInit {
 
   detalles: DetalleReservaCreate[] = [];
   tours: Tour[] = [];
+  personas: Persona[] = [];
 
   constructor(
     private reservaService: ReservaService,
-    public tourService: TourService
+    public tourService: TourService,
+    private personaService: PersonaService,
+    private usuarioService: UsuarioService
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +48,27 @@ export class NuevaReservaComponent implements OnInit {
     const identityRaw = sessionStorage.getItem('identity');
     const usuario = identityRaw ? JSON.parse(identityRaw) : null;
     this.rolUsuario = usuario?.role || '';
+
+    // Fecha mínima (hoy)
+    this.todayStr = new Date().toISOString().slice(0, 10);
+
+    if (this.rolUsuario === 'admin') {
+      this.personaService.getPersonas(token).subscribe({
+        next: (data) => this.personas = data,
+        error: (err) => console.error('Error al cargar personas', err)
+      });
+    } else if (usuario?.username) {
+      // Cliente: obtener su idpersona desde backend y fijarlo como huésped
+      this.usuarioService.getUsuarioByUsername(usuario.username, token).subscribe({
+        next: (user) => {
+          const idPersona = (user as any)?.idpersona || 0;
+          this.huespedId = idPersona;
+        },
+        error: (err) => {
+          console.error('No se pudo obtener idpersona del usuario', err);
+        }
+      });
+    }
 
     this.tourService.getTours(token).subscribe({
       next: (data) => this.tours = data,
@@ -66,7 +95,12 @@ export class NuevaReservaComponent implements OnInit {
         descuento: 0,
       };
     } else {
-      alert('Por favor complete correctamente los campos del detalle.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor complete correctamente los campos del detalle.',
+        confirmButtonColor: '#4e3e2e'
+      });
     }
   }
 
@@ -80,17 +114,32 @@ export class NuevaReservaComponent implements OnInit {
   const usuario = identityRaw ? JSON.parse(identityRaw) : null;
 
   if (!usuario || !usuario.username) {
-    alert('No se pudo obtener el usuario autenticado');
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de autenticación',
+      text: 'No se pudo obtener el usuario autenticado.',
+      confirmButtonColor: '#4e3e2e'
+    });
     return;
   }
 
   if (this.huespedId <= 0) {
-    alert('Debe ingresar un ID de huésped válido.');
+    Swal.fire({
+      icon: 'warning',
+      title: 'ID de huésped requerido',
+      text: 'Debe ingresar un ID de huésped válido.',
+      confirmButtonColor: '#4e3e2e'
+    });
     return;
   }
 
   if (this.detalles.length === 0) {
-    alert('Debe agregar al menos un detalle.');
+    Swal.fire({
+      icon: 'warning',
+      title: 'Detalles requeridos',
+      text: 'Debe agregar al menos un detalle.',
+      confirmButtonColor: '#4e3e2e'
+    });
     return;
   }
 
@@ -115,76 +164,29 @@ export class NuevaReservaComponent implements OnInit {
     };
   })
 };
-/*
-  const payload = {
-    usuario: usuario.username,
-    huesped: this.huespedId,
-    estadoreserva: 'reservado',
-    fechaReserva: fechaReservaFormateada,
-    detalles: this.detalles.map(det => ({
-      ...det,
-      descuento: this.rolUsuario === 'admin' ? det.descuento : 0
-    }))
-  };*/
 
   this.reservaService.createReserva(payload, token).subscribe({
     next: () => {
-      alert('✅ Reserva creada correctamente');
+      Swal.fire({
+        icon: 'success',
+        title: '¡Reserva creada!',
+        text: 'Reserva creada correctamente.',
+        confirmButtonColor: '#4e3e2e'
+      });
       this.detalles = [];
       this.huespedId = 0;
     },
     error: (err) => {
       console.error(err);
-      alert('❌ Error al crear la reserva');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al crear la reserva.',
+        confirmButtonColor: '#4e3e2e'
+      });
     },
   });
 }
-
-
-  /*
-  crearReserva(): void {
-  const token = sessionStorage.getItem('token') || '';
-  const identityRaw = sessionStorage.getItem('identity');
-  const usuario = identityRaw ? JSON.parse(identityRaw) : null;
-
-  if (!usuario || !usuario.username) {
-    alert('No se pudo obtener el usuario autenticado');
-    return;
-  }
-
-  if (this.huespedId <= 0) {
-    alert('Debe ingresar un ID de huésped válido.');
-    return;
-  }
-
-  if (this.detalles.length === 0) {
-    alert('Debe agregar al menos un detalle.');
-    return;
-  }
-
-  const payload = {
-  usuario: usuario.username,
-  huesped: this.huespedId,
-  estadoreserva: 'reservado',
-  fechaReserva: new Date().toISOString().slice(0, 19),
-  detalles: this.detalles.map(det => ({
-    ...det,
-    descuento: this.rolUsuario === 'admin' ? det.descuento : 0
-  }))
-};
-
-  this.reservaService.createReserva(payload, token).subscribe({
-    next: () => {
-      alert('✅ Reserva creada correctamente');
-      this.detalles = [];
-      this.huespedId = 0;
-    },
-    error: (err) => {
-      console.error(err);
-      alert('❌ Error al crear la reserva');
-    },
-  });
-} */
 
   trackTour(index: number, tour: Tour): number{
     return tour.idtour;

@@ -18,6 +18,9 @@ import { FindByTourComponent } from './components/tour/find-by-tour/find-by-tour
 import { BuscarReservaHuespedComponent } from './components/reserva/buscar-reserva-huesped/buscar-reserva-huesped.component';
 import { MisReservasUsuarioComponent } from './components/reserva/mis-reservas-usuario/mis-reservas-usuario.component';
 import { MisFacturasUsuarioComponent } from './components/factura/mis-facturas-usuario/mis-facturas-usuario.component';
+import { ListarFacturaAdminComponent } from './components/factura/listar-factura-admin/listar-factura-admin.component';
+import { GestionarRespaldoComponent } from './components/respaldo/gestionar-respaldo/gestionar-respaldo.component';
+import { ListarRespaldoComponent } from './components/respaldo/listar-respaldo/listar-respaldo.component';
 
 
 export const routes: Routes = [
@@ -26,9 +29,9 @@ export const routes: Routes = [
     { path: 'usuario/agregar', component: UsuarioComponent },
     { path: 'persona/agregar', component: AgregarPersonaComponent },
     { path: 'persona/listar', component: ListarPersonaComponent },
-    { path: 'persona/editar', component: EditarPersonaComponent },
+    { path: 'persona/editar/:id', component: EditarPersonaComponent },
     { path: 'usuario/listar', component: ListarUsuarioComponent },
-    { path: 'usuario/editar', component: EditarUsuarioComponent },
+    { path: 'usuario/editar/:id', component: EditarUsuarioComponent },
     { path: 'usuario/actualizar', component: ActualizarClienteUsuarioComponent },
     { path: 'reservas', component: ListarReservaComponent },
     { path: 'reservas/nueva', component: NuevaReservaComponent },
@@ -36,9 +39,12 @@ export const routes: Routes = [
     { path: 'reservas/mis-reservas', component: MisReservasUsuarioComponent },
     { path: 'tour/agregar', component: NewTourComponent },
     { path: 'tour/listar', component: ListTourComponent },
-    { path: 'tour/editar', component: EditTourComponent },
-    { path: 'tour/filtrar', component: FindByTourComponent },
+    { path: 'tour/editar/:id', component: EditTourComponent },
+    { path: 'respaldos/gestionar', component: GestionarRespaldoComponent },
+    { path: 'respaldos/listar', component: ListarRespaldoComponent },
+    
     { path: 'facturas/mis-facturas', component: MisFacturasUsuarioComponent },
+    { path: 'facturas/listar', component: ListarFacturaAdminComponent },
 
 
 

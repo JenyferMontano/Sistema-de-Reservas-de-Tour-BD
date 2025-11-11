@@ -1,0 +1,36 @@
+.listar-respaldos {
+  max-width: 1100px;
+}
+
+.btn-consultar {
+  background-color: #4e3e2e;
+  color: #fff;
+}
+
+.btn-consultar:disabled {
+  opacity: 0.7;
+}
+
+.table thead th {
+  white-space: nowrap;
+}
+
+.btn-restaurar {
+  background-color: #2e4e3e;
+  color: #fff;
+  padding-inline: 1.5rem;
+}
+
+.btn-restaurar:disabled {
+  opacity: 0.7;
+}
+
+.spinner-border {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.filtro-fecha {
+  min-width: 220px;
+}
+
