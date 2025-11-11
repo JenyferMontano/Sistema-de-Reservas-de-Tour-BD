@@ -4,16 +4,18 @@
 
     <div class="row mb-3">
       <div class="col">
-        <input type="text" class="form-control" placeholder="Nombre de usuario" required [(ngModel)]="usuario.username"
+        <label for="username" class="form-label">Nombre de usuario</label>
+        <input id="username" type="text" class="form-control" placeholder="Ej: carlos" required [(ngModel)]="usuario.username"
           name="username" />
       </div>
       <div class="col">
-        <input type="password" class="form-control" placeholder="Contraseña" required [(ngModel)]="usuario.password"
-          name="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&.])[A-Za-z\\d@$!%*?&.]{8,}$"
+        <label for="password" class="form-label">Contraseña</label>
+        <input id="password" type="password" class="form-control" placeholder="Mínimo 8 caracteres, segura" required [(ngModel)]="usuario.password"
+          name="password" pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$"
           title="La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo."
-          #password="ngModel" />
+          #passwordModel="ngModel" />
 
-        <div *ngIf="password.invalid && password.touched" class="text-danger mt-1">
+        <div *ngIf="passwordModel?.invalid && passwordModel?.errors?.['pattern'] && (passwordModel?.dirty || passwordModel?.touched)" class="text-danger mt-1">
           La contraseña debe tener al menos 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo.
         </div>
       </div>
@@ -21,14 +23,16 @@
 
     <div class="row mb-3">
       <div class="col">
-        <select class="form-control" required [(ngModel)]="usuario.rol" name="rol">
+        <label for="rol" class="form-label">Rol</label>
+        <select id="rol" class="form-control" required [(ngModel)]="usuario.rol" name="rol">
           <option value="" disabled selected>Seleccione un rol</option>
           <option value="cliente">Cliente</option>
           <option value="admin">Administrador</option>
         </select>
       </div>
       <div class="col">
-        <select class="form-control" required [(ngModel)]="usuario.idpersona" name="idPersona">
+        <label for="idPersona" class="form-label">Persona</label>
+        <select id="idPersona" class="form-control" required [(ngModel)]="idPersonaSeleccionada" name="idPersona">
           <option value="" disabled selected>Seleccione una persona</option>
           <option *ngFor="let p of personas" [ngValue]="p.idpersona">
             {{ p.idpersona }} - {{ p.nombre }} {{ p.apellido_1 }} {{ p.apellido_2 }}
@@ -38,7 +42,7 @@
     </div>
 
     <div class="mb-3">
-      <label for="imagen">Seleccione una imagen de perfil:</label>
+      <label for="imagen" class="form-label">Seleccione una imagen de perfil</label>
       <input type="file" class="form-control" id="imagen" (change)="uploadImage($event)" accept=".png,.jpg,.jpeg" />
 
       <div class="mt-2">

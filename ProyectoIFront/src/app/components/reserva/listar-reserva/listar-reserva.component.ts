@@ -22,6 +22,8 @@ export class ListarReservaComponent implements OnInit {
   reservas: (Reserva & { mostrarDetalles: boolean })[] = [];
   detallesPorReserva: { [reservaId: number]: DetalleReservaFactura[] } = {};
   tours: Tour[] = [];
+  searchText: string = '';
+  filtroEstado: 'reservado' | 'cancelado' | 'facturado' | '' = '';
 
   constructor(
     private reservaService: ReservaService,
@@ -68,10 +70,24 @@ export class ListarReservaComponent implements OnInit {
     });
   }
 
-    formatFechaHora(fecha: string): string {
-    const d = new Date(fecha);
+  private parseAsLocalIfNaive(fecha: string): Date {
+    // Acepta: 'YYYY-MM-DD HH:mm:ss[.fffffff][Z|+hh:mm|-hh:mm]' o con 'T' en lugar de espacio
+    // Se ignora la zona si viene; siempre se construye como LOCAL para no desplazar la hora
+    const re = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,7}))?)?(?:Z|[+-]\d{2}:\d{2})?$/;
+    const m = re.exec(fecha);
+    if (m) {
+      const [, y, mo, d, hh, mm, ss, frac] = m;
+      // ms: truncar a milisegundos si vienen más de 3 dígitos
+      const ms = frac ? +frac.toString().padEnd(3, '0').slice(0, 3) : 0;
+      return new Date(+y, +mo - 1, +d, +hh, +mm, ss ? +ss : 0, ms);
+    }
+    // Fallback: Date estándar
+    return new Date(fecha);
+  }
+
+  formatFechaHora(fecha: string): string {
+    const d = this.parseAsLocalIfNaive(fecha);
     return d.toLocaleString('es-CR', {
-      timeZone: 'America/Costa_Rica', // ajusta según tu zona
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -81,39 +97,68 @@ export class ListarReservaComponent implements OnInit {
     });
   }
 
+  getEstadoClass(estado: string): string {
+    const e = (estado || '').toLowerCase();
+    if (e.includes('reserv')) return 'estado-reservado';
+    if (e.includes('cancel')) return 'estado-cancelado';
+    if (e.includes('factur')) return 'estado-facturado';
+    return 'estado-reservado';
+  }
+
+  displayEstado(estado: string): string {
+    const e = (estado || '').toLowerCase().trim();
+    if (e.includes('cancel')) return 'Cancelado';
+    if (e.includes('reserv')) return 'Reservado';
+    if (e.includes('factur')) return 'Facturada';
+    return estado ? estado.charAt(0).toUpperCase() + estado.slice(1) : '';
+  }
+
+  get reservasFiltradas(): (Reserva & { mostrarDetalles: boolean })[] {
+    const term = this.searchText.trim().toLowerCase();
+    return this.reservas.filter(r => {
+      const coincideTexto = !term ||
+        String(r.numreserva).includes(term) ||
+        (r.nombreusuario || '').toLowerCase().includes(term) ||
+        `${r.nombrecliente} ${r.apellido_1} ${r.apellido_2}`.toLowerCase().includes(term);
+      const e = (r.estadoreserva || '').toLowerCase();
+      const pasaEstado = !this.filtroEstado ||
+        (this.filtroEstado === 'facturado' ? e.includes('factur') : e.includes(this.filtroEstado));
+      return coincideTexto && pasaEstado;
+    });
+  }
+
   eliminarReserva(reservaId: number): void {
     const token = sessionStorage.getItem('token') || '';
 
     Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'Esta acción eliminará la reserva y todos sus detalles.',
+      title: '¿Cancelar reserva?',
+      text: 'Esto marcará la reserva como Cancelado. No se borrará el registro.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'Mantener',
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.reservaService.deleteReserva(reservaId, token).subscribe({
+        this.reservaService.updateEstadoReserva(reservaId, 'cancelado', token).subscribe({
           next: () => {
-            // Filtra la reserva eliminada del array
-            this.reservas = this.reservas.filter(r => r.numreserva !== reservaId);
-            // Elimina también los detalles del objeto auxiliar
-            delete this.detallesPorReserva[reservaId];
-
+            // Actualiza el estado en la lista sin eliminar la tarjeta
+            this.reservas = this.reservas.map(r =>
+              r.numreserva === reservaId ? { ...r, estadoreserva: 'cancelado' } : r
+            );
             Swal.fire({
               icon: 'success',
-              title: 'Eliminada',
-              text: 'Reserva eliminada correctamente!'
+              title: 'Reserva cancelada',
+              text: 'El estado fue actualizado a Cancelado.'
             });
           },
           error: (err) => {
-            console.error('Error eliminando reserva', err);
+            console.error('Error actualizando estado', err);
             Swal.fire({
               icon: 'error',
               title: 'Error',
-              text: 'Ocurrió un error al intentar eliminar la reserva!!!'
+              text: 'No se pudo actualizar el estado de la reserva.'
             });
           }
         });
@@ -126,14 +171,24 @@ export class ListarReservaComponent implements OnInit {
 
     Swal.fire({
       title: '¿Crear factura?',
-      text: `¿Deseas generar una factura para la reserva #${reserva.numreserva}?`,
+      text: `Reserva #${reserva.numreserva}. Selecciona el método de pago:`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Sí, facturar',
+      confirmButtonText: 'Continuar',
       cancelButtonText: 'Cancelar',
+      input: 'radio',
+      inputOptions: {
+        'Efectivo': 'Efectivo',
+        'Tarjeta': 'Tarjeta'
+      },
+      inputValidator: (value) => {
+        if (!value) return 'Selecciona un método de pago';
+        return undefined as any;
+      }
     }).then((result) => {
       if (result.isConfirmed) {
-        
+        const metodo = (result.value as 'Efectivo' | 'Tarjeta') || 'Efectivo';
+
         Swal.fire({
           title: 'Procesando...',
           text: 'Creando la factura, por favor espera.',
@@ -145,8 +200,8 @@ export class ListarReservaComponent implements OnInit {
           persona: reserva.idpersona,
           reserva: reserva.numreserva,
           estadoFactura: 'Pagada',
-          metodoPago: 'Efectivo',
-          iva: 13, // Asumiendo un IVA fijo del 13%
+          metodoPago: metodo,
+          iva: 13,
           subtotal: reserva.subtotal
         };
 
@@ -157,12 +212,11 @@ export class ListarReservaComponent implements OnInit {
               title: '¡Factura Creada!',
               text: `La factura #${response.factura.idfactura} fue generada. Preparando descarga...`
             });
-
-            // Llama a la función para descargar el PDF
             this.descargarFacturaPDF(response.factura.idfactura, token);
-
-            // Actualiza la UI para que la reserva facturada desaparezca de la lista
-            this.reservas = this.reservas.filter(r => r.numreserva !== reserva.numreserva);
+            // Marcar la reserva como facturada en la lista (no eliminar)
+            this.reservas = this.reservas.map(r =>
+              r.numreserva === reserva.numreserva ? { ...r, estadoreserva: 'Facturada' } : r
+            );
           },
           error: (err) => {
             console.error('Error creando factura', err);
@@ -173,50 +227,6 @@ export class ListarReservaComponent implements OnInit {
     });
   }
 
-/*
-  crearFactura(reserva: Reserva): void {
-    const token = sessionStorage.getItem('token') || '';
-
-    Swal.fire({
-      title: '¿Crear factura?',
-      text: `¿Deseas generar una factura para la reserva #${reserva.numreserva}?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, facturar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#28a745',
-      cancelButtonColor: '#6c757d'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const facturaRequest: FacturaCreateRequest = {
-          persona: reserva.idpersona,
-          reserva: reserva.numreserva,
-          estadoFactura: 'Facturada',
-          metodoPago: 'Efectivo',
-          iva: 13, // Asumiendo un IVA fijo del 13%
-          subtotal: reserva.subtotal
-        };
-
-        this.facturaService.createFactura(facturaRequest, token).subscribe({
-          next: () => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Factura creada',
-              text: `La factura de la reserva #${reserva.numreserva} fue generada correctamente.`
-            });
-          },
-          error: (err) => {
-            console.error('Error creando factura', err);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se pudo crear la factura. Verifique los datos o contacte soporte.'
-            });
-          }
-        });
-      }
-    });
-  } */
 
   private descargarFacturaPDF(facturaId: number, token: string): void {
     this.facturaService.getFacturaPDF(facturaId, token).subscribe({

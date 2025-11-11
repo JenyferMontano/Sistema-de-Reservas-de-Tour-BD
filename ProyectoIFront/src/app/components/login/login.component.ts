@@ -4,6 +4,7 @@ import {  Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
 import { LoginR } from '../../models/loginR';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -33,16 +34,8 @@ export class LoginComponent {
           sessionStorage.setItem('identity', JSON.stringify(response.user));
           this._router.navigate(['']);
 
-          setTimeout(() => {
-            alert('Tu sesión expirará en 1 minuto');
-          }, 840000); // 14 min 
-          setTimeout(() => {
-            alert(
-              'Tu sesión ha expirado. Por favor, inicia sesión nuevamente!!!'
-            );
-            sessionStorage.clear();
-            this._router.navigate(['/login']);
-          }, 900000); // 15 min
+          this.programarAlertasDeSesion();
+
         } else {
           this.status = 0; 
         }
@@ -56,5 +49,65 @@ export class LoginComponent {
         }
       }
     });
+  }
+
+  private programarAlertasDeSesion(): void {
+    const win = window as any;
+
+    if (win.sessionWarningTimeout) {
+      clearTimeout(win.sessionWarningTimeout);
+    }
+    if (win.sessionExpirationTimeout) {
+      clearTimeout(win.sessionExpirationTimeout);
+    }
+
+    win.sessionWarningTimeout = window.setTimeout(() => {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sesión por expirar',
+        text: 'Tu sesión expirará en 1 minuto',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#4e3e2e',
+        timer: 60000,
+        timerProgressBar: true
+      });
+    }, 840000);
+
+    win.sessionExpirationTimeout = window.setTimeout(() => this.finalizarSesionPorTiempo(), 900000);
+  }
+
+  private finalizarSesionPorTiempo(): void {
+    this.limpiarTemporizadoresGlobales();
+    this._usuarioService.logout().subscribe({
+      next: () => this.mostrarAlertaExpiracion(),
+      error: () => this.mostrarAlertaExpiracion(),
+    });
+  }
+
+  private mostrarAlertaExpiracion(): void {
+    Swal.fire({
+      icon: 'error',
+      title: 'Sesión expirada',
+      text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+      confirmButtonText: 'Ir al login',
+      confirmButtonColor: '#4e3e2e',
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    }).then(() => {
+      sessionStorage.clear();
+      this._router.navigate(['/login']);
+    });
+  }
+
+  private limpiarTemporizadoresGlobales(): void {
+    const win = window as any;
+    if (win.sessionWarningTimeout) {
+      clearTimeout(win.sessionWarningTimeout);
+      win.sessionWarningTimeout = undefined;
+    }
+    if (win.sessionExpirationTimeout) {
+      clearTimeout(win.sessionExpirationTimeout);
+      win.sessionExpirationTimeout = undefined;
+    }
   }
 }

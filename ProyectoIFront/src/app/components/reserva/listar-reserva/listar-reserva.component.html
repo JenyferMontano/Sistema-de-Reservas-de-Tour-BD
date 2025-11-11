@@ -1,11 +1,24 @@
 <div class="scroll-container">
-    <div *ngFor="let reserva of reservas" class="reserva-card">
+    <div class="filtros">
+        <label class="form-label">Buscar</label>
+        <input class="form-control" type="text" placeholder="Por número de reserva, usuario o huésped" [(ngModel)]="searchText" />
+        <div class="checks">
+            <label><input type="radio" name="estado" value="" [(ngModel)]="filtroEstado" /> Todos</label>
+            <label><input type="radio" name="estado" value="reservado" [(ngModel)]="filtroEstado" /> Reservado</label>
+            <label><input type="radio" name="estado" value="cancelado" [(ngModel)]="filtroEstado" /> Cancelado</label>
+            <label><input type="radio" name="estado" value="facturado" [(ngModel)]="filtroEstado" /> Facturado</label>
+        </div>
+    </div>
+
+    <div *ngFor="let reserva of reservasFiltradas" class="reserva-card">
         <!-- Encabezado de la reserva -->
         <div class="reserva-header">
             <h3>Reserva #{{ reserva.numreserva }}</h3>
             <p><strong>Fecha:</strong> {{ formatFechaHora(reserva.fechareserva) }}</p>
             <p><strong>Usuario:</strong> {{ reserva.nombreusuario }}</p>
-            <p><strong>Huésped:</strong> {{ reserva.nombrecliente }} {{ reserva.apellido_1 }} {{ reserva.apellido_2 }}
+            <p><strong>Huésped:</strong> {{ reserva.nombrecliente }} {{ reserva.apellido_1 }} {{ reserva.apellido_2 }}</p>
+            <p><strong>Estado:</strong>
+                <span class="badge" [ngClass]="getEstadoClass(reserva.estadoreserva)">{{ displayEstado(reserva.estadoreserva) }}</span>
             </p>
 
             <div class="botones-accion-wide">
@@ -13,11 +26,11 @@
                     {{ reserva.mostrarDetalles ? 'Ocultar Detalles' : 'Ver Detalles' }}
                 </button>
 
-                <button (click)="crearFactura(reserva)" class="facturar-btn">
+                <button *ngIf="(reserva.estadoreserva || '').toLowerCase() !== 'cancelado' && !(reserva.estadoreserva || '').toLowerCase().includes('factur')" (click)="crearFactura(reserva)" class="facturar-btn">
                     Facturar
                 </button>
 
-                <button class="eliminar-btn derecha" (click)="eliminarReserva(reserva.numreserva)">
+                <button *ngIf="(reserva.estadoreserva || '').toLowerCase() !== 'cancelado' && !(reserva.estadoreserva || '').toLowerCase().includes('factur')" class="eliminar-btn derecha" (click)="eliminarReserva(reserva.numreserva)">
                     Eliminar Reserva
                 </button>
             </div>

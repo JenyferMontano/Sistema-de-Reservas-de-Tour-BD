@@ -12,16 +12,22 @@
   color: #333;
 }
 
-.card-img-top {
-  height: 200px;
+.busqueda { margin-bottom: 1rem; }
+.form-label { font-weight: 600; color: #1b130d; }
+.form-control { border-radius: 0; }
+
+.tabla-tours { width: 100%; border-collapse: collapse; }
+.tabla-tours th, .tabla-tours td { padding: 0.5rem; border: 1px solid #ccc; background-color: rgba(255,255,255,0.4); }
+
+.btn-edit { border-radius: 0; margin-right: 6px; background-color: #198754; color: #fff; border: none; }
+.btn-edit:hover { background-color: #157347; }
+.btn-delete { border-radius: 0; background-color: #dc3545; color: #fff; border: none; }
+.btn-delete:hover { background-color: #bb2d3b; }
+
+.thumb {
+  width: 64px;
+  height: 48px;
   object-fit: cover;
-  border-bottom: 1px solid #ccc;
-}
-
-.card {
   border-radius: 0;
-}
-
-.card-body {
-  padding: 1rem;
+  border: 1px solid #bbb;
 }

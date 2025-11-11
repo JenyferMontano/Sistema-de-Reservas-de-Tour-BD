@@ -22,39 +22,30 @@ export class ReservaService {
     return this._http.get<Reserva>(this.url + 'reserva/' + id);
   }
 
-  getReservasByHuesped(id: number, token: string): Observable<Reserva[]> {
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-    return this._http.get<Reserva[]>(this.url + 'reserva/huesped/' + id, { headers });
+  getReservasByHuesped(id: number, _token?: string): Observable<Reserva[]> {
+    return this._http.get<Reserva[]>(this.url + 'reserva/huesped/' + id);
   }
 
-getReservasByUsuario(usuario: string, token: string): Observable<Reserva[]> {
-  const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-  return this._http.get<Reserva[]>(this.url + 'reserva/usuario/' + usuario, { headers });
+getReservasByUsuario(usuario: string, _token?: string): Observable<Reserva[]> {
+  return this._http.get<Reserva[]>(this.url + 'reserva/usuario/' + usuario);
 }
-  createReserva(data: any, token: string): Observable<any> {
-    const headers = new HttpHeaders()
-      .set('Authorization', 'Bearer ' + token)
-      .set('Content-Type', 'application/json');
-
-    return this._http.post(this.url + 'reserva/crear', data, { headers });
+  createReserva(data: any, _token?: string): Observable<any> {
+    return this._http.post(this.url + 'reserva/crear', data);
   }
 
-  deleteReserva(id: number, token: string): Observable<any> {
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-    return this._http.delete(this.url + 'reserva/' + id, { headers });
+  deleteReserva(id: number, _token?: string): Observable<any> {
+    return this._http.delete(this.url + 'reserva/' + id);
   }
 
-  updateEstadoReserva(numReserva: number, estado: string, token: string): Observable<any> {
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
+  updateEstadoReserva(numReserva: number, estado: string, _token?: string): Observable<any> {
     const body = {
       numReserva: numReserva,
       estadoReserva: estado
     };
-    return this._http.put(this.url + 'reserva/estado', body, { headers });
+    return this._http.put(this.url + 'reserva/estado', body);
   }
-  getMisReservas(token: string): Observable<Reserva[]> {
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-    return this._http.get<Reserva[]>(this.url, { headers });
+  getMisReservas(_token?: string): Observable<Reserva[]> {
+    return this._http.get<Reserva[]>(this.url + 'reserva/mis-reservas');
   }
 
 }

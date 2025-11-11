@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TourService } from '../../../services/tour.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { Tour } from '../../../models/tour';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-new-tour',
@@ -59,30 +60,41 @@ export class NewTourComponent {
     console.log('TOKEN QUE SE ESTÁ ENVIANDO:', this.token);
     
     if (!this.token.trim()) {
-      this.mensajeError = 'Token de autenticación no definido.';
-      this.ocultarMensajes();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: 'Token de autenticación no definido.',
+        confirmButtonColor: '#4e3e2e'
+      });
       return;
     }
 
     if (!this.selectedFile) {
-      this.mensajeError = 'Debe seleccionar una imagen para el tour.';
-      this.ocultarMensajes();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Imagen requerida',
+        text: 'Debe seleccionar una imagen para el tour.',
+        confirmButtonColor: '#4e3e2e'
+      });
       return;
     }
 
     const formData = new FormData();
+    // Adjuntar con llaves comunes por compatibilidad del backend
     formData.append('file0', this.selectedFile);
+    formData.append('file', this.selectedFile);
 
     this.tourService.uploadTourImage(formData, this.token).subscribe({
       next: (res) => {
         this.tour.imagetour = res.file_name;
 
        this.tour.disponibilidad = Number(this.tour.disponibilidad);
+       this.tour.preciobase = Number(this.tour.preciobase);
         console.log('Objeto Tour a enviar:', this.tour);
   
         this.tourService.crearTour(this.tour, this.token).subscribe({
           next: () => {
-            this.finalizarCreacion('¡Tour e imagen creados con éxito!');
+            this.finalizarCreacion();
           },
           error: (err) => {
             this.status = 0;
@@ -91,16 +103,24 @@ export class NewTourComponent {
         });
       },
       error: () => {
-        this.mensajeError = 'Error al subir la imagen.';
-        this.ocultarMensajes();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al subir la imagen.',
+          confirmButtonColor: '#4e3e2e'
+        });
       }
     });
   }
 
-  private finalizarCreacion(mensaje: string): void {
+  private finalizarCreacion(): void {
     this.status = 1;
-    this.mensajeExito = mensaje;
-    this.mensajeError = '';
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Tour creado exitosamente.',
+      confirmButtonColor: '#4e3e2e'
+    });
     this.tour = {
       idtour: 0,
       nombre: '',
@@ -114,28 +134,32 @@ export class NewTourComponent {
     this.selectedFile = null;
     this.imagePreview = '';
     this.filename = '';
-    this.ocultarMensajes();
+    this.mensajeError = '';
+    this.mensajeExito = '';
   }
 
   private manejarError(err: any): void {
     const errorMsg: string = err?.error?.error || err?.error?.message || '';
+    let mensaje = '';
+    
     if (errorMsg.includes('Duplicate entry') || errorMsg.includes('1062')) {
-      this.mensajeError = 'El ID del tour ya existe.';
+      mensaje = 'El ID del tour ya existe.';
     } else if (err.status === 400) {
-      this.mensajeError = 'Datos inválidos. Revisa el formulario.';
+      mensaje = 'Datos inválidos. Revisa el formulario.';
     } else if (err.status === 500) {
-      this.mensajeError = 'Error interno del servidor.';
+      mensaje = 'Error interno del servidor.';
     } else {
-      this.mensajeError = 'Error inesperado al crear el tour.';
+      mensaje = 'Error inesperado al crear el tour.';
     }
+    
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: mensaje,
+      confirmButtonColor: '#4e3e2e'
+    });
+    
     this.mensajeExito = '';
-    this.ocultarMensajes();
-  }
-
-  private ocultarMensajes(): void {
-    setTimeout(() => {
-      this.mensajeError = '';
-      this.mensajeExito = '';
-    }, 4000);
+    this.mensajeError = '';
   }
 }

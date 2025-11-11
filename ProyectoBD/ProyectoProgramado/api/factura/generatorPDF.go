@@ -35,7 +35,7 @@ pdf.SetFillColor(155, 144, 123) // Beige profesional
 pdf.Rect(10, 10, 190, 35, "F")
 
 // --- Logo de la empresa ---
-logoPath := "C:/Users/jenif/Downloads/I Ciclo 2025/Implementacion de Bases de Datos/Proyecto/ProyectoFinal/ProyectoBases/ProyectoBD/ProyectoProgramado/utils/images/factura_logo/logitoFactura.png"
+logoPath := "utils/images/factura_logo/logitoFactura.png"
 
 // Logo más grande (ancho 45 mm, centrado verticalmente)
 pdf.ImageOptions(

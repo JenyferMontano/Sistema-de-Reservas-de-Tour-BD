@@ -7,7 +7,7 @@
 .scroll-container {
   width: 100%;
   max-width: 900px;
-  height: 80vh; /* Altura visible con scroll si se llena */
+  height: 80vh;
   overflow-y: auto;
   padding-right: 0.5rem;
 }
@@ -20,7 +20,7 @@
 }
 .form-label { font-weight: 600; color: #1b130d; }
 .form-control { border-radius: 0; margin-bottom: 0.5rem; }
-.checks { display: flex; gap: 1rem; }
+.checks { display: flex; gap: 1rem; align-items: center; }
 
 .reserva-card {
   width: 100%;
@@ -50,44 +50,7 @@
   color: #444;
 }
 
-.reserva-header button {
-  margin-top: 0.75rem;
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.reserva-header button:hover {
-  background-color: #0056b3;
-}
-
-.detalles-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.detalles-table th,
-.detalles-table td {
-  border: 1px solid #ddd;
-  padding: 0.6rem;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.detalles-table th {
-  background-color: #f7f7f7;
-  font-weight: 600;
-}
-
-.resumen {
-  margin-top: 1rem;
-  text-align: right;
-}
+.resumen { text-align: right; }
 
 .resumen p {
   margin: 0.25rem 0;
@@ -95,6 +58,7 @@
   font-size: 0.95rem;
   color: #333;
 }
+
 .botones-accion-wide {
   display: flex;
   align-items: center;
@@ -118,8 +82,8 @@
   background-color: #c0392b  !important;
 }
 
-.facturar-btn {
-  background-color: #28a745 !important;
+.pdf-btn {
+  background-color: #007bff !important;
   color: white !important;
   padding: 6px 14px;
   border-radius: 6px;
@@ -128,8 +92,8 @@
   margin-left: 10px;
 }
 
-.facturar-btn:hover {
-  background-color: #218838 !important;
+.pdf-btn:hover {
+  background-color: #0056b3 !important;
 }
 
 /* badges de estado */
@@ -138,10 +102,10 @@
   padding: 6px 12px;
   font-size: 0.85rem;
   font-weight: 600;
-  border-radius: 9999px; /* estilo pill */
+  border-radius: 9999px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.08);
   line-height: 1;
 }
-.estado-reservado { background: #e6f4ea; color: #1e7e34; }
-.estado-cancelado { background: #fdecea; color: #a71d2a; }
-.estado-facturado { background: #e7f1ff; color: #0d6efd; }
+.estado-pagada { background: #e6f4ea; color: #1e7e34; }
+.estado-anulada { background: #fdecea; color: #a71d2a; }
+
