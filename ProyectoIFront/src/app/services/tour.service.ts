@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { server } from './global';
+import { API_BASE } from '../app.config';
 import { Tour } from '../models/tour';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class TourService {
   private accessToken: string;
 
   constructor(private _http: HttpClient) {
-    this.url = server.url;
+    this.url = API_BASE;
     this.accessToken = '';
   }
 
@@ -28,19 +28,19 @@ export class TourService {
       imagetour: tour.imagetour
     };
 
-    return this._http.post<Tour>(this.url + 'tour/', body);
+    return this._http.post<Tour>(`${this.url}/tour/`, body);
   }
 
   getTours(_token?: string): Observable<Tour[]> {
-    return this._http.get<Tour[]>(this.url + 'tour/');
+    return this._http.get<Tour[]>(`${this.url}/tour/`);
   }
 
   getPublicTours(_token?: string): Observable<Tour[]> {
-    return this._http.get<Tour[]>(this.url + 'tour/public');
+    return this._http.get<Tour[]>(`${this.url}/tour/public`);
   }
 
   getTourById(id: number, _token?: string): Observable<Tour> {
-    return this._http.get<Tour>(`${this.url}tour/get/${id}`);
+    return this._http.get<Tour>(`${this.url}/tour/get/${id}`);
   }
 
   updateTour(tour: Tour, _token?: string): Observable<any> {
@@ -55,22 +55,22 @@ export class TourService {
       imagetour: tour.imagetour
     };
 
-    return this._http.put(`${this.url}tour/${tour.idtour}`, body);
+    return this._http.put(`${this.url}/tour/${tour.idtour}`, body);
   }
 
   deleteTour(id: number, _token?: string): Observable<any> {
-    return this._http.delete(`${this.url}tour/${id}`);
+    return this._http.delete(`${this.url}/tour/${id}`);
   }
 
   getToursByTipo(tipo: string, _token?: string): Observable<Tour[]> {
-    return this._http.get<Tour[]>(`${this.url}tour/tipo/${tipo}`);
+    return this._http.get<Tour[]>(`${this.url}/tour/tipo/${tipo}`);
   }
 
   uploadTourImage(data: FormData, _token?: string): Observable<any> {
-    return this._http.post(this.url + 'tour/upload', data);
+    return this._http.post(`${this.url}/tour/upload`, data);
   }
 
   getTourImageUrl(imageName: string): string {
-    return this.url + 'tour/img/' + imageName;
+    return `${this.url}/tour/img/${imageName}`;
   }
 }

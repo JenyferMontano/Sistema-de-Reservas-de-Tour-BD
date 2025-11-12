@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { server } from './global';
+import { API_BASE } from '../app.config';
 
 export interface RespaldoPayload {
   ruta_respaldo: string;
@@ -24,7 +24,7 @@ export interface OperacionRespaldo {
   providedIn: 'root',
 })
 export class RespaldoService {
-  private readonly baseUrl = `${server.url}respaldo`;
+  private readonly baseUrl = `${API_BASE}/respaldo`;
 
   constructor(private http: HttpClient) {}
 
