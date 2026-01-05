@@ -18,19 +18,18 @@ Aplicación web full stack desarrollada como proyecto del curso Administración 
 - Go 1.22 o superior.
 - Node.js 18 LTS (incluye npm).
 - Angular CLI instalado globalmente (`npm install -g @angular/cli`).
-- Archivo `app.env` con las variables de entorno requeridas por el backend (cadena de conexión a SQL Server, configuración de tokens y puertos). Un ejemplo de este archivo se incluye en `ProyectoBD/ProyectoProgramado/app.env`.
+- Archivo `app.env` con las variables de entorno requeridas por el backend (cadena de conexión a SQL Server, configuración de tokens y puertos).
 
 ## ▶️ Puesta en marcha local
 El proyecto asume que la base de datos ya está desplegada en Azure y accesible a través de las credenciales configuradas en `app.env`.
 
 **Backend (Go)**
 1. Abrir una terminal y ubicarse en `ProyectoBD/ProyectoProgramado`.
-2. Verificar que `app.env` contenga las variables necesarias (`DB_SOURCE`, `SERVER_ADDRESS`, `TOKEN_SYMMETRIC_KEY`, entre otras).
+2. Verificar que `.env` contenga las variables necesarias
 3. Ejecutar el servidor:
    ```bash
    go run main.go
    ```
-   Por defecto expone la API en el puerto definido en `app.env` (ej. `:8080`).
 
 **Frontend (Angular)**
 1. Abrir una segunda terminal y ubicarse en `ProyectoIFront`.
