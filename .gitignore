@@ -5,4 +5,7 @@
 # Also ignore node_modules if the frontend folder is named ProyectoFront (common naming variant)
 /ProyectoFront/node_modules/
 
+# Ignore environment files with sensitive credentials
+ProyectoBD/ProyectoProgramado/app.env
+
 # You can add other global ignores below as needed
