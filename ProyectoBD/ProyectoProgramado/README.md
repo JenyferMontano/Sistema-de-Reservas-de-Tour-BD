@@ -31,22 +31,6 @@ API REST construida en Go para la gestión de tours, reservas, facturación y op
 
 > ℹ️ El repositorio no incluye los scripts de procedimientos almacenados. Si trabajas con Azure SQL Database, coordina con el DBA para cargarlos o mantenlos en un repositorio privado.
 
-## Variables de entorno (`app.env`)
-La aplicación utiliza `viper` y espera encontrar un archivo `app.env` en el directorio raíz.
-
-```env
-DB_DRIVER=sqlserver
-DB_SOURCE=sqlserver://<usuario>:<contraseña>@<host>?database=<nombre_bd>&encrypt=disable
-SERVER_URL=127.0.0.1:8080
-API_VERSION=api/v1
-TOKEN_DURATION=15m
-SYMMETRIC_KEY=12345678123456781234567812345678
-```
-
-- `DB_SOURCE`: usa el formato de conexión compatible con `github.com/microsoft/go-mssqldb`. Ajusta opciones como `encrypt=disable/true`, `trustservercertificate=true`, etc. según tu servidor.
-- `TOKEN_DURATION`: duración de los tokens de acceso (formato Go, por ejemplo `15m`, `1h`).
-- `SYMMETRIC_KEY`: llave de 32 bytes requerida por PASETO. Actualmente `api/server.go` utiliza un valor fijo; si lo cambias aquí, actualiza también la llamada a `security.NewPasetoBuilder`.
-- No subas `app.env` con credenciales reales al control de versiones.
 
 ## Ejecutar la API
 1. Instalar dependencias:
